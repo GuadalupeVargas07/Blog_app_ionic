@@ -15,14 +15,6 @@ Una aplicación móvil para llevar tu diario personal de forma sencilla y visual
 - Angular
 - Capacitor (para funcionalidades nativas)
 
-## 🚀 Instalación
-
-\`\`\`bash
-git clone https://github.com/GuadalupeVargas07/Blog_app_ionic.git
-cd Blog_app_ionic
-npm install
-ionic serve
-\`\`\`
 
 ## 📌 Estado del proyecto
 
