@@ -1,0 +1,22 @@
+.dark-content {
+  --background: #121212; // Fondo oscuro limpio
+}
+
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.placeholder-text {
+  color: #e0e0e0;
+  font-size: 1.2rem;
+  font-weight: 400;
+  max-width: 80%;
+  margin: 0;
+  line-height: 1.5;
+  opacity: 0.85;
+}

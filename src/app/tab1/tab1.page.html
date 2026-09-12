@@ -1,0 +1,39 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Inicio</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div class="perfil-header" *ngIf="usuario">
+    <ion-avatar class="avatar-perfil">
+      <img *ngIf="usuario.foto" [src]="usuario.foto" alt="Foto de perfil" />
+      <ion-icon *ngIf="!usuario.foto" name="person-circle-outline" class="icono-default"></ion-icon>
+    </ion-avatar>
+
+    <div class="texto-bienvenida">
+      <h2>¡Hola, {{ usuario.nombre }}!</h2>
+      <p>Bienvenido de nuevo a la aplicación</p>
+    </div>
+  </div>
+
+  <ion-card *ngIf="usuario">
+    <ion-card-header>
+      <ion-card-title>Información de tu cuenta</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p><strong>Correo:</strong> {{ usuario.email }}</p>
+      <p>Has iniciado sesión correctamente a través de la API PHP con Axios.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <app-explore-container name="Página Principal - Tab 1"></app-explore-container>
+
+</ion-content>

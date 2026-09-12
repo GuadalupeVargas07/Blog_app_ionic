@@ -1,0 +1,92 @@
+<ion-content class="ion-padding dark-bg" [fullscreen]="true">
+  <!-- Fondo de estrellas -->
+  <div class="stars"></div>
+  <div class="stars2"></div>
+  <div class="stars3"></div>
+
+  <div id="msform">
+
+    <!-- Toggle Login / Registro -->
+    <ion-segment [(ngModel)]="mode" class="mode-toggle" mode="ios">
+      <ion-segment-button value="login">
+        <ion-label>Iniciar sesión</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="register">
+        <ion-label>Crear cuenta</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- ================= LOGIN ================= -->
+    <fieldset *ngIf="mode === 'login'" class="fade-in glow-card">
+      <div class="icon-wrap">
+      <ion-icon [icon]="planetIcon"></ion-icon>      </div>
+      <h2 class="fs-title">Bienvenido de nuevo</h2>
+      <h3 class="fs-subtitle">Accede a tu cuenta</h3>
+
+      <ion-input class="dark-input" type="email" placeholder="Email" [(ngModel)]="loginData.email"></ion-input>
+      <ion-input class="dark-input" type="password" placeholder="Contraseña" [(ngModel)]="loginData.password"></ion-input>
+
+      <a class="forgot-link">¿Olvidaste tu contraseña?</a>
+
+      <ion-button expand="block" class="btn-red" (click)="onLogin()">
+        Acceder
+      </ion-button>
+
+      <p class="switch-text">
+        ¿No tienes cuenta?
+        <a (click)="mode = 'register'">Regístrate</a>
+      </p>
+    </fieldset>
+
+    <!-- ================= REGISTRO ================= -->
+    <ng-container *ngIf="mode === 'register'">
+
+      <ul id="progressbar">
+        <li [ngClass]="{'active': currentStep >= 1}">Cuenta</li>
+        <li [ngClass]="{'active': currentStep >= 2}">Perfil</li>
+        <li [ngClass]="{'active': currentStep >= 3}">Confirmar</li>
+      </ul>
+
+      <!-- Paso 1: Datos de Acceso -->
+      <fieldset *ngIf="currentStep === 1" class="fade-in glow-card">
+        <h2 class="fs-title">Crea tu cuenta</h2>
+        <h3 class="fs-subtitle">Paso 1 de 3: Credenciales</h3>
+
+        <ion-input class="dark-input" type="email" placeholder="Email" [(ngModel)]="registerData.email"></ion-input>
+        <ion-input class="dark-input" type="password" placeholder="Contraseña" [(ngModel)]="registerData.password"></ion-input>
+
+        <ion-button expand="block" class="btn-red" (click)="nextStep()">Siguiente</ion-button>
+      </fieldset>
+
+      <!-- Paso 2: Información Personal -->
+      <fieldset *ngIf="currentStep === 2" class="fade-in glow-card">
+        <h2 class="fs-title">Datos Personales</h2>
+        <h3 class="fs-subtitle">Paso 2 de 3: Tu Nombre</h3>
+
+        <ion-input class="dark-input" type="text" placeholder="Nombre Completo" [(ngModel)]="registerData.nombre"></ion-input>
+
+        <div class="button-group">
+          <ion-button class="btn-ghost" (click)="previousStep()">Atrás</ion-button>
+          <ion-button class="btn-red" (click)="nextStep()">Siguiente</ion-button>
+        </div>
+      </fieldset>
+
+      <!-- Paso 3: Confirmación de datos -->
+      <fieldset *ngIf="currentStep === 3" class="fade-in glow-card">
+        <h2 class="fs-title">Confirmar Datos</h2>
+        <h3 class="fs-subtitle">Paso 3 de 3: Revisa tu información</h3>
+
+        <div class="summary-info">
+          <p><strong>Email:</strong> {{ registerData.email }}</p>
+          <p><strong>Nombre:</strong> {{ registerData.nombre }}</p>
+        </div>
+
+        <div class="button-group">
+          <ion-button class="btn-ghost" (click)="previousStep()">Atrás</ion-button>
+          <ion-button class="btn-red" (click)="onRegister()">Completar Registro</ion-button>
+        </div>
+      </fieldset>
+
+    </ng-container>
+  </div>
+</ion-content>

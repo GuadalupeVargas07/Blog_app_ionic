@@ -1,0 +1,300 @@
+@use "sass:math";
+
+/* ===== Fondo oscuro ===== */
+.dark-bg {
+  --background: #05050a;
+  --color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== Generador de estrellas ===== */
+@function multiple-box-shadow($n) {
+  $value: '#{math.random(2000)}px #{math.random(2000)}px #fff';
+  @for $i from 2 through $n {
+    $value: '#{$value} , #{math.random(2000)}px #{math.random(2000)}px #fff';
+  }
+  @return $value;
+}
+
+$shadows-small: multiple-box-shadow(200);
+$shadows-medium: multiple-box-shadow(100);
+$shadows-big: multiple-box-shadow(50);
+
+.stars, .stars2, .stars3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  background: transparent;
+}
+
+.stars {
+  box-shadow: #{$shadows-small};
+  animation: animStar 60s linear infinite;
+  width: 1px; height: 1px;
+
+  &:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 1px; height: 1px;
+    box-shadow: #{$shadows-small};
+  }
+}
+
+.stars2 {
+  box-shadow: #{$shadows-medium};
+  width: 2px; height: 2px;
+  animation: animStar 100s linear infinite;
+
+  &:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 2px; height: 2px;
+    box-shadow: #{$shadows-medium};
+  }
+}
+
+.stars3 {
+  box-shadow: #{$shadows-big};
+  width: 3px; height: 3px;
+  animation: animStar 150s linear infinite;
+
+  &:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 3px; height: 3px;
+    box-shadow: #{$shadows-big};
+  }
+}
+
+@keyframes animStar {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-2000px); }
+}
+
+/* ===== Toggle login/registro ===== */
+.mode-toggle {
+  max-width: 380px;
+  margin: 10px auto 20px auto;
+  --background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  z-index: 2;
+  position: relative;
+
+  ion-segment-button {
+    --color: #999;
+    --color-checked: #fff;
+    --indicator-color: linear-gradient(135deg, #e6262a, #8b0000);
+    --border-radius: 8px;
+    font-size: 13px;
+  }
+}
+
+/* ===== Contenedor del form ===== */
+#msform {
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+
+  fieldset {
+    border: 0 none;
+    border-radius: 16px;
+    padding: 28px 26px;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+  }
+}
+
+.glow-card {
+  background: linear-gradient(160deg, rgba(20,20,25,0.9), rgba(10,10,14,0.95));
+  border: 1px solid rgba(230, 38, 42, 0.25);
+  box-shadow:
+    0 0 25px rgba(230, 38, 42, 0.15),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+}
+
+.icon-wrap {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 12px auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(230,38,42,0.25), transparent 70%);
+
+  ion-icon {
+    font-size: 30px;
+    color: #ff4d4f;
+  }
+}
+
+/* ===== Inputs ===== */
+.dark-input {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --color: #fff;
+  --placeholder-color: #888;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  text-align: left;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &.has-focus {
+    border-color: #e6262a;
+    box-shadow: 0 0 8px rgba(230, 38, 42, 0.5);
+  }
+}
+
+/* ===== Botones ===== */
+.btn-red {
+  --background: linear-gradient(135deg, #e6262a, #8b0000);
+  --background-activated: #b71c1c;
+  --border-radius: 10px;
+  --box-shadow: 0 4px 15px rgba(230, 38, 42, 0.4);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s ease;
+
+  &:active { transform: scale(0.97); }
+}
+
+.btn-ghost {
+  --background: transparent;
+  --color: #ccc;
+  --border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  ion-button { flex: 1; margin: 0; }
+}
+
+.forgot-link {
+  display: block;
+  font-size: 12px;
+  color: #e6262a;
+  text-align: right;
+  margin: -6px 0 18px 0;
+  cursor: pointer;
+}
+
+.switch-text {
+  font-size: 13px;
+  color: #999;
+  margin-top: 16px;
+
+  a {
+    color: #ff4d4f;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.fs-title {
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #fff;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.fs-subtitle {
+  font-weight: normal;
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 22px;
+}
+
+.summary-info {
+  text-align: left;
+  color: #ccc;
+  font-size: 14px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.03);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* ===== Barra de progreso ===== */
+#progressbar {
+  margin-bottom: 30px;
+  padding: 0;
+  overflow: hidden;
+  counter-reset: step;
+  z-index: 2;
+  position: relative;
+
+  li {
+    list-style-type: none;
+    color: #999;
+    text-transform: uppercase;
+    font-size: 9px;
+    width: 33.33%;
+    float: left;
+    position: relative;
+
+    &:before {
+      content: counter(step);
+      counter-increment: step;
+      width: 26px;
+      height: 26px;
+      line-height: 26px;
+      display: block;
+      font-size: 11px;
+      color: #999;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+      margin: 0 auto 6px auto;
+      transition: all 0.3s ease;
+    }
+
+    &:after {
+      content: '';
+      width: 100%;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      position: absolute;
+      left: -50%;
+      top: 12px;
+      z-index: -1;
+      transition: all 0.3s ease;
+    }
+
+    &:first-child:after { content: none; }
+
+    &.active:before, &.active:after {
+      background: linear-gradient(135deg, #e6262a, #8b0000);
+      color: white;
+      box-shadow: 0 0 10px rgba(230, 38, 42, 0.6);
+    }
+  }
+}
+
+/* ===== Animación de transición ===== */
+.fade-in {
+  animation: fadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
