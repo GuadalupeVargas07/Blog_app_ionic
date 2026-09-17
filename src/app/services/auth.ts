@@ -1,18 +1,29 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';  
+import axios from 'axios';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class AuthService {
-  // Cambia esta URL por la ruta real donde corre tu login.php
-  private apiUrl = 'http://localhost/API_aplicacion1/login.php';
+  private readonly baseUrl = 'http://localhost/API_aplicacion1';
 
-  constructor(private http: HttpClient) {}
+  async login(credentials: { email: string; password: string }): Promise<any> {
+    const response = await axios.post(`${this.baseUrl}/login.php`, credentials, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-login(credentials: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, credentials);
+    return response.data;
+  }
+
+  async register(userData: { email: string; password: string; nombre: string }): Promise<any> {
+    const response = await axios.post(`${this.baseUrl}/cuentas.php?action=register`, userData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return response.data;
   }
 }

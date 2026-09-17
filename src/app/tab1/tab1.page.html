@@ -1,39 +1,163 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>Inicio</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="logout()">
-        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="perfil-content" [fullscreen]="true">
 
-<ion-content class="ion-padding">
+  <!-- ===================== HEADER ===================== -->
+  <div class="perfil-topbar">
+    <button class="icon-btn" (click)="openMenu()" aria-label="Menú">
+      <ion-icon name="menu-outline"></ion-icon>
+    </button>
 
-  <div class="perfil-header" *ngIf="usuario">
-    <ion-avatar class="avatar-perfil">
-      <img *ngIf="usuario.foto" [src]="usuario.foto" alt="Foto de perfil" />
-      <ion-icon *ngIf="!usuario.foto" name="person-circle-outline" class="icono-default"></ion-icon>
-    </ion-avatar>
+    <button class="topbar-avatar" (click)="editarFotoPerfil()" aria-label="Foto de perfil">
+      @if (usuario?.foto) {
+        <img [src]="usuario!.foto" alt="Foto de perfil" />
+      } @else {
+        <ion-icon name="person-circle-outline"></ion-icon>
+      }
+    </button>
+  </div>
 
-    <div class="texto-bienvenida">
-      <h2>¡Hola, {{ usuario.nombre }}!</h2>
-      <p>Bienvenido de nuevo a la aplicación</p>
+  <!-- ===================== PORTADA ===================== -->
+  <div class="cover" [class.cover--empty]="!coverPhoto()">
+    @if (coverPhoto()) {
+      <img [src]="coverPhoto()!" alt="Foto de portada" />
+    }
+    <button class="cover__edit-btn" (click)="editarPortada()">
+      <ion-icon name="camera-outline"></ion-icon>
+      Editar portada
+    </button>
+  </div>
+
+  <!-- ===================== TARJETA DE PERFIL ===================== -->
+  <div class="perfil-card">
+    <div class="avatar-wrap">
+      <div class="avatar-perfil">
+        @if (usuario?.foto) {
+          <img [src]="usuario!.foto" alt="Foto de perfil" />
+        } @else {
+          <ion-icon name="person-circle-outline" class="icono-default"></ion-icon>
+        }
+      </div>
+      <button class="avatar-edit-btn" (click)="editarFotoPerfil()" aria-label="Cambiar foto">
+        <ion-icon name="camera-outline"></ion-icon>
+      </button>
+    </div>
+
+    @if (usuario) {
+      <h1 class="perfil-nombre">{{ usuario.nombre }}</h1>
+      @if (handle()) {
+        <p class="perfil-handle">{{ handle() }}</p>
+      }
+    }
+
+    @if (bio()) {
+      <p class="perfil-bio">«{{ bio() }}»</p>
+    } @else {
+      <button class="perfil-bio perfil-bio--empty" (click)="editarPerfil()">
+        + Añade una frase sobre ti
+      </button>
+    }
+
+    @if (intereses().length > 0) {
+      <div class="perfil-tags">
+        @for (tag of intereses(); track tag) {
+          <span class="tag">{{ tag }}</span>
+        }
+      </div>
+    } @else {
+      <button class="tag tag--add" (click)="editarPerfil()">+ Añadir intereses</button>
+    }
+  </div>
+
+  <!-- ===================== ESTADÍSTICAS ===================== -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <strong>{{ notas() }}</strong>
+      <span>Notas</span>
+    </div>
+    <div class="stat-card">
+      <strong>{{ fotosCount() }}</strong>
+      <span>Fotos</span>
+    </div>
+    <div class="stat-card">
+      <strong>{{ animos() }}</strong>
+      <span>Ánimos</span>
     </div>
   </div>
 
-  <ion-card *ngIf="usuario">
-    <ion-card-header>
-      <ion-card-title>Información de tu cuenta</ion-card-title>
-    </ion-card-header>
+  <!-- ===================== SEGMENTOS ===================== -->
+  <div class="segmentos">
+    <button
+      class="segmento"
+      [class.segmento--activo]="activeTab() === 'diario'"
+      (click)="setActiveTab('diario')"
+    >
+      <ion-icon name="book-outline"></ion-icon>
+      Diario
+    </button>
+    <button
+      class="segmento"
+      [class.segmento--activo]="activeTab() === 'fotos'"
+      (click)="setActiveTab('fotos')"
+    >
+      <ion-icon name="images-outline"></ion-icon>
+      Fotos
+    </button>
+    <button
+      class="segmento"
+      [class.segmento--activo]="activeTab() === 'animos'"
+      (click)="setActiveTab('animos')"
+    >
+      <ion-icon name="location-outline"></ion-icon>
+      Ánimos
+    </button>
+  </div>
 
-    <ion-card-content>
-      <p><strong>Correo:</strong> {{ usuario.email }}</p>
-      <p>Has iniciado sesión correctamente a través de la API PHP con Axios.</p>
-    </ion-card-content>
-  </ion-card>
+  <!-- ===================== CONTENIDO: DIARIO ===================== -->
+  @if (activeTab() === 'diario') {
+    <div class="nota-card">
+      <ion-icon name="book-outline" class="nota-card__icono"></ion-icon>
+      <p class="nota-card__texto">Aún no has escrito ninguna nota.</p>
+      <button class="nota-card__editar" (click)="comingSoon('Nueva nota')">
+        <ion-icon name="create-outline"></ion-icon>
+      </button>
+    </div>
+  }
 
-  <app-explore-container name="Página Principal - Tab 1"></app-explore-container>
+  <!-- ===================== CONTENIDO: FOTOS ===================== -->
+  @if (activeTab() === 'fotos') {
+    @if (photoService.photos().length > 0) {
+      <div class="fotos-grid">
+        @for (photo of photoService.photos(); track photo.filepath) {
+          <div class="fotos-grid__item">
+            <img [src]="photo.webviewPath" alt="Foto" loading="lazy" />
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-block">
+        <ion-icon name="images-outline"></ion-icon>
+        <p>Aún no tienes fotos guardadas.</p>
+      </div>
+    }
+  }
 
+  <!-- ===================== CONTENIDO: ÁNIMOS ===================== -->
+  @if (activeTab() === 'animos') {
+    <div class="empty-block">
+      <ion-icon name="location-outline"></ion-icon>
+      <p>Aún no registras estados de ánimo.</p>
+    </div>
+  }
+
+  <!-- ===================== EDITAR PERFIL ===================== -->
+  <div class="acciones-perfil">
+    <button class="btn-editar-perfil" (click)="editarPerfil()">
+      <ion-icon name="create-outline"></ion-icon>
+      Editar perfil
+    </button>
+    <button class="btn-ia" (click)="comingSoon('Asistente de perfil')" aria-label="Asistente">
+      <ion-icon name="sparkles-outline"></ion-icon>
+    </button>
+  </div>
+
+  <div class="perfil-bottom-spacer"></div>
 </ion-content>

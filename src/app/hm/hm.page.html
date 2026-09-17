@@ -1,13 +1,210 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="dark">
-    <ion-title>Home</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="hm-content" [fullscreen]="true">
 
-<ion-content class="dark-content" [fullscreen]="true">
-  <div class="center-container">
-    <p class="placeholder-text">
-      Tercera pantalla (aún no sé de qué será mi app)
-    </p>
+  <!-- ===================== HEADER ===================== -->
+  <div class="hm-topbar">
+    <button class="icon-btn" (click)="comingSoon('Menú')" aria-label="Menú">
+      <ion-icon name="menu-outline"></ion-icon>
+    </button>
+
+    <button class="avatar-btn" (click)="comingSoon('Perfil')" aria-label="Perfil">
+      <ion-icon name="person-circle-outline"></ion-icon>
+    </button>
   </div>
+
+  <!-- ================= NUEVA ENTRADA ================= -->
+  <div class="entry-card">
+    <div class="entry-card__row">
+      <div class="entry-avatar">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </div>
+      <ion-textarea
+        class="entry-input"
+        placeholder="¿Qué historia o pensamiento tienes hoy?"
+        [autoGrow]="true"
+        rows="1"
+        [(ngModel)]="newEntryTextModel"
+      ></ion-textarea>
+    </div>
+
+    <div class="entry-card__actions">
+      <button class="chip" (click)="addPhoto()">
+        <ion-icon name="camera-outline"></ion-icon>
+        <span>Añadir Foto</span>
+      </button>
+      <button class="chip" (click)="comingSoon('Estado Astral / Ánimo')">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        <span>Estado Astral / Ánimo</span>
+      </button>
+      <button class="chip" (click)="comingSoon('Etiquetas')">
+        <ion-icon name="pricetag-outline"></ion-icon>
+        <span>Etiquetas</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- =============== NAVEGACIÓN RÁPIDA =============== -->
+  <div class="quick-nav">
+    <div class="quick-nav__header">
+      <div class="quick-nav__title">
+        <ion-icon name="compass-outline"></ion-icon>
+        <span>NAVEGACIÓN RÁPIDA</span>
+      </div>
+      <button class="collapse-btn" (click)="toggleQuickNav()">
+        {{ quickNavExpanded() ? 'Colapsar' : 'Expandir' }}
+        <ion-icon [name]="quickNavExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+      </button>
+    </div>
+
+    @if (quickNavExpanded()) {
+      <div class="quick-nav__grid">
+        <button class="quick-nav__item" (click)="comingSoon('Buscar')">
+          <ion-icon name="search-outline"></ion-icon>
+          <span>Buscar</span>
+        </button>
+        <button class="quick-nav__item" (click)="comingSoon('Todas')">
+          <ion-icon name="albums-outline"></ion-icon>
+          <span>Todas</span>
+        </button>
+        <button class="quick-nav__item" (click)="comingSoon('Recuerdos')">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>Recuerdos</span>
+        </button>
+        <button class="quick-nav__item" (click)="comingSoon('Ajustes')">
+          <ion-icon name="options-outline"></ion-icon>
+          <span>Ajustes</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ============== ÚLTIMA HISTORIA / VACÍO ============== -->
+  @if (latestEntry(); as entry) {
+    <div class="feature-card">
+      <div class="feature-card__meta">
+        <span><ion-icon name="time-outline"></ion-icon> {{ entry.date }}</span>
+        <ion-icon name="star-outline" class="feature-card__star"></ion-icon>
+      </div>
+      <h2 class="feature-card__title">{{ entry.title }}</h2>
+      <p class="feature-card__quote">"{{ entry.excerpt }}"</p>
+      <div class="feature-card__footer">
+        <span class="feature-card__read"><ion-icon name="time-outline"></ion-icon> {{ entry.readTime }}</span>
+        <button class="btn-primary">Leer completa <ion-icon name="arrow-forward-outline"></ion-icon></button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-card">
+      <div class="empty-card__icon">
+        <ion-icon name="book-outline"></ion-icon>
+      </div>
+      <h3>Aún no tienes historias</h3>
+      <p>Escribe tu primer pensamiento y aparecerá destacado aquí.</p>
+    </div>
+  }
+
+  <!-- ========== ÚLTIMA CAPTURA COMPARTIDA / VACÍO ========== -->
+  <div class="section-header">
+    <span class="section-header__dot"></span>
+    <h3>Última captura compartida</h3>
+  </div>
+
+  @if (latestCapture(); as capture) {
+    <div class="capture-card">
+      <div class="capture-card__tag">
+        <ion-icon name="location-outline"></ion-icon>
+        {{ capture.location }}
+      </div>
+      <img [src]="capture.imageUrl" [alt]="capture.caption" />
+      <p class="capture-card__caption">{{ capture.caption }}</p>
+    </div>
+  } @else {
+    <div class="empty-card">
+      <div class="empty-card__icon">
+        <ion-icon name="images-outline"></ion-icon>
+      </div>
+      <h3>Aún no has compartido capturas</h3>
+      <p>Tus fotos aparecerán aquí en cuanto compartas la primera.</p>
+      <button class="btn-outline" (click)="addPhoto()">
+        <ion-icon name="camera-outline"></ion-icon>
+        Tomar una foto
+      </button>
+    </div>
+  }
+
+  <!-- ========== ÚLTIMO ESTADO DE ÁNIMO / VACÍO ========== -->
+  @if (latestMood(); as mood) {
+    <div class="mood-card">
+      <div class="mood-card__header">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        <span>ÚLTIMO ESTADO DE ÁNIMO PUBLICADO</span>
+      </div>
+      <div class="mood-card__title-row">
+        <div class="mood-card__name">
+          <ion-icon name="moon-outline"></ion-icon>
+          {{ mood.name }}
+        </div>
+        <span class="mood-card__badge">{{ mood.vibe }}</span>
+      </div>
+      <p class="mood-card__quote">"{{ mood.name }}"</p>
+      <div class="mood-card__tags">
+        <span><ion-icon name="sparkles-outline"></ion-icon> Energía: {{ mood.energy }}%</span>
+        <span>Música: {{ mood.music }}</span>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-card">
+      <div class="empty-card__icon">
+        <ion-icon name="moon-outline"></ion-icon>
+      </div>
+      <h3>Aún no registras tu ánimo de hoy</h3>
+      <p>Comparte cómo te sientes y lo verás reflejado aquí.</p>
+      <button class="btn-outline" (click)="comingSoon('Registrar estado de ánimo')">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        Registrar estado de ánimo
+      </button>
+    </div>
+  }
+
+  <!-- ===================== ESTADÍSTICAS ===================== -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <ion-icon name="book-outline"></ion-icon>
+      <strong>{{ daysRegistered() }}</strong>
+      <span>Días reg.</span>
+    </div>
+    <div class="stat-card">
+      <ion-icon name="images-outline"></ion-icon>
+      <strong>{{ photosCount() }}</strong>
+      <span>Fotos</span>
+    </div>
+    <div class="stat-card">
+      <ion-icon name="sparkles-outline"></ion-icon>
+      <strong>{{ moods().length }}</strong>
+      <span>Estados de ánimo</span>
+    </div>
+  </div>
+
+  <div class="hm-bottom-spacer"></div>
 </ion-content>
+
+<!-- ===================== TAB BAR ===================== -->
+<div class="hm-tabbar">
+  <button class="hm-tab hm-tab--active">
+    <ion-icon name="home"></ion-icon>
+    <span>HOME</span>
+  </button>
+  <button class="hm-tab" (click)="comingSoon('Diary')">
+    <ion-icon name="book-outline"></ion-icon>
+    <span>DIARY</span>
+  </button>
+  <button class="hm-tab hm-tab--fab" (click)="comingSoon('Nueva entrada')" aria-label="Crear">
+    <ion-icon name="add"></ion-icon>
+  </button>
+  <button class="hm-tab" (click)="comingSoon('Moods')">
+    <ion-icon name="grid-outline"></ion-icon>
+    <span>MOODS</span>
+  </button>
+  <button class="hm-tab" (click)="comingSoon('Profile')">
+    <ion-icon name="person-outline"></ion-icon>
+    <span>PROFILE</span>
+  </button>
+</div>

@@ -1,22 +1,543 @@
-.dark-content {
-  --background: #121212; // Fondo oscuro limpio
+:host {
+  --hm-bg: #0a0a0b;
+  --hm-card: #17171a;
+  --hm-card-border: rgba(255, 255, 255, 0.06);
+  --hm-text: #f2f2f3;
+  --hm-text-muted: #9a9aa0;
+  --hm-text-faint: #6b6b70;
+  --hm-red: #e63354;
+  --hm-red-dark: #7a1330;
+  --hm-red-darker: #1f0a10;
 }
 
-.center-container {
+.hm-content {
+  --background: var(--hm-bg);
+  --padding-bottom: 90px;
+}
+
+/* ===================== HEADER ===================== */
+.hm-topbar {
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100%;
-  padding: 20px;
-  text-align: center;
+  justify-content: space-between;
+  padding: 14px 16px 4px;
 }
 
-.placeholder-text {
-  color: #e0e0e0;
-  font-size: 1.2rem;
-  font-weight: 400;
-  max-width: 80%;
+.icon-btn,
+.avatar-btn {
+  background: transparent;
+  border: none;
+  color: var(--hm-text);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.avatar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--hm-card);
+  border: 1px solid var(--hm-card-border);
+  font-size: 20px;
+  color: var(--hm-text-muted);
+}
+
+/* ===================== TARJETA NUEVA ENTRADA ===================== */
+.entry-card {
+  margin: 12px 16px;
+  background: var(--hm-card);
+  border: 1px solid var(--hm-card-border);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.entry-card__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.entry-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #232326;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: var(--hm-text-faint);
+}
+
+.entry-input {
+  --background: transparent;
+  --color: var(--hm-text);
+  --placeholder-color: var(--hm-text-faint);
+  --placeholder-opacity: 1;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 8px;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.entry-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.chip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #201f22;
+  border: 1px solid var(--hm-card-border);
+  color: var(--hm-text-muted);
+  border-radius: 20px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+/* ===================== NAVEGACIÓN RÁPIDA ===================== */
+.quick-nav {
+  margin: 4px 16px 12px;
+}
+
+.quick-nav__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.quick-nav__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--hm-text-muted);
+
+  ion-icon {
+    font-size: 15px;
+    color: var(--hm-red);
+  }
+}
+
+.collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--hm-text-faint);
+  font-size: 0.78rem;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+.quick-nav__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.quick-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--hm-card);
+  border: 1px solid var(--hm-card-border);
+  border-radius: 14px;
+  padding: 12px 4px;
+  color: var(--hm-text-muted);
+  font-size: 0.72rem;
+
+  ion-icon {
+    font-size: 19px;
+    color: var(--hm-text);
+  }
+}
+
+/* ===================== TARJETA DESTACADA ===================== */
+.feature-card {
+  margin: 4px 16px 20px;
+  border-radius: 18px;
+  padding: 16px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--hm-red-dark) 0%, transparent 55%),
+    var(--hm-red-darker);
+  border: 1px solid rgba(230, 51, 84, 0.25);
+}
+
+.feature-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--hm-text-muted);
+  margin-bottom: 10px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.feature-card__star {
+  color: var(--hm-red);
+  font-size: 16px;
+}
+
+.feature-card__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--hm-text);
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.feature-card__quote {
+  font-size: 0.88rem;
+  color: var(--hm-text-muted);
+  border-left: 3px solid var(--hm-red);
+  padding-left: 10px;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+
+.feature-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feature-card__read {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--hm-text-faint);
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--hm-red);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 9px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ===================== SECCIÓN: CAPTURA ===================== */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 10px;
+}
+
+.section-header__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hm-red);
+}
+
+.section-header h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--hm-text);
   margin: 0;
+}
+
+.capture-card {
+  margin: 0 16px 20px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--hm-card);
+  border: 1px solid var(--hm-card-border);
+  position: relative;
+
+  img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+}
+
+.capture-card__tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--hm-text);
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.capture-card__caption {
+  padding: 12px 14px;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--hm-text-muted);
+}
+
+/* ===================== SECCIÓN: ÁNIMO ===================== */
+.mood-card {
+  margin: 0 16px 20px;
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(155deg, #2a0f18 0%, var(--hm-card) 60%);
+  border: 1px solid rgba(230, 51, 84, 0.2);
+}
+
+.mood-card__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--hm-text-muted);
+  margin-bottom: 10px;
+
+  ion-icon {
+    color: var(--hm-red);
+  }
+}
+
+.mood-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.mood-card__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--hm-text);
+
+  ion-icon {
+    color: #f0c46a;
+  }
+}
+
+.mood-card__badge {
+  background: var(--hm-red);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.mood-card__quote {
+  border-left: 3px solid var(--hm-red);
+  padding-left: 10px;
+  font-size: 0.85rem;
+  color: var(--hm-text-muted);
   line-height: 1.5;
-  opacity: 0.85;
+  margin: 10px 0 14px;
+}
+
+.mood-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--hm-text-muted);
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 10px;
+  }
+}
+
+/* ===================== ESTADOS VACÍOS ===================== */
+.empty-card {
+  margin: 0 16px 20px;
+  border-radius: 18px;
+  padding: 26px 20px;
+  background: var(--hm-card);
+  border: 1px dashed var(--hm-card-border);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(230, 51, 84, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 24px;
+      color: var(--hm-red);
+    }
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--hm-text);
+    margin: 0 0 6px;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: var(--hm-text-faint);
+    margin: 0 0 14px;
+    line-height: 1.4;
+  }
+}
+
+.btn-outline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--hm-red);
+  color: var(--hm-red);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ===================== ESTADÍSTICAS ===================== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0 16px 24px;
+}
+
+.stat-card {
+  background: var(--hm-card);
+  border: 1px solid var(--hm-card-border);
+  border-radius: 16px;
+  padding: 14px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--hm-red);
+    margin-bottom: 4px;
+  }
+
+  strong {
+    font-size: 1.1rem;
+    color: var(--hm-text);
+  }
+
+  span {
+    font-size: 0.68rem;
+    color: var(--hm-text-faint);
+  }
+}
+
+.hm-bottom-spacer {
+  height: 8px;
+}
+
+/* ===================== TAB BAR ===================== */
+.hm-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #0d0d0f;
+  border-top: 1px solid var(--hm-card-border);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  z-index: 10;
+}
+
+.hm-tab {
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--hm-text-faint);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  flex: 1;
+
+  ion-icon {
+    font-size: 21px;
+  }
+
+  &--active {
+    color: var(--hm-red);
+  }
+}
+
+.hm-tab--fab {
+  background: var(--hm-red);
+  color: #fff;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-top: -22px;
+  box-shadow: 0 4px 14px rgba(230, 51, 84, 0.5);
+  flex: 0 0 48px;
+
+  ion-icon {
+    font-size: 26px;
+  }
 }

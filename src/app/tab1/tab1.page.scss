@@ -1,40 +1,425 @@
-@use "sass:math";
-
-.perfil-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+:host {
+  --pf-bg: #0a0a0b;
+  --pf-card: #17171a;
+  --pf-card-border: rgba(255, 255, 255, 0.06);
+  --pf-text: #f2f2f3;
+  --pf-text-muted: #9a9aa0;
+  --pf-text-faint: #6b6b70;
+  --pf-red: #e63354;
+  --pf-red-dark: #7a1330;
 }
 
-.avatar-perfil {
-  width: 64px;
-  height: 64px;
+.perfil-content {
+  --background: var(--pf-bg);
+  --padding-bottom: 24px;
+}
+
+/* ===================== HEADER FLOTANTE ===================== */
+.perfil-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.icon-btn {
+  background: rgba(0, 0, 0, 0.35);
+  border: none;
+  color: var(--pf-text);
+  font-size: 22px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ion-color-light);
-  border-radius: 50%;
-  overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
-.avatar-perfil img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.topbar-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--pf-card);
+  border: 1px solid rgba(230, 51, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--pf-text-muted);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* ===================== PORTADA ===================== */
+.cover {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, var(--pf-bg) 100%);
+  }
+}
+
+.cover--empty {
+  background:
+    radial-gradient(120% 120% at 20% 10%, rgba(230, 51, 84, 0.35) 0%, transparent 55%),
+    radial-gradient(100% 100% at 90% 30%, rgba(122, 19, 48, 0.45) 0%, transparent 60%),
+    #0d0d0f;
+}
+
+.cover__edit-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 40px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(10, 10, 11, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--pf-text);
+  font-size: 0.78rem;
+  padding: 7px 12px;
+  border-radius: 18px;
+  backdrop-filter: blur(4px);
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+/* ===================== TARJETA DE PERFIL ===================== */
+.perfil-card {
+  position: relative;
+  margin: -48px 16px 0;
+  background: var(--pf-card);
+  border: 1px solid var(--pf-card-border);
+  border-radius: 20px;
+  padding: 56px 20px 20px;
+  text-align: center;
+  z-index: 2;
+}
+
+.avatar-wrap {
+  position: absolute;
+  top: -44px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.avatar-perfil {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #232326;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--pf-bg);
+  box-shadow: 0 0 0 2px rgba(230, 51, 84, 0.55), 0 0 22px rgba(230, 51, 84, 0.45);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .icono-default {
-  font-size: 64px;
-  color: var(--ion-color-medium);
+  font-size: 60px;
+  color: var(--pf-text-faint);
 }
 
-.texto-bienvenida h2 {
-  margin: 0;
+.avatar-edit-btn {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pf-red);
+  border: 2px solid var(--pf-bg);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.perfil-nombre {
+  margin: 4px 0 2px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.perfil-handle {
+  margin: 0 0 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--pf-red);
+  text-transform: uppercase;
+}
+
+.perfil-bio {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--pf-text-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+  max-width: 34ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.perfil-bio--empty {
+  background: transparent;
+  border: 1px dashed var(--pf-card-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--pf-text-faint);
+  font-style: normal;
+}
+
+.perfil-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.tag {
+  background: #201f22;
+  border: 1px solid var(--pf-card-border);
+  color: var(--pf-text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 14px;
+}
+
+.tag--add {
+  color: var(--pf-red);
+  border-color: rgba(230, 51, 84, 0.35);
+  background: transparent;
+}
+
+/* ===================== ESTADÍSTICAS ===================== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 16px 0;
+}
+
+.stat-card {
+  background: var(--pf-card);
+  border: 1px solid var(--pf-card-border);
+  border-radius: 16px;
+  padding: 14px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  strong {
+    font-size: 1.2rem;
+    color: var(--pf-text);
+  }
+
+  span {
+    font-size: 0.66rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--pf-text-faint);
+  }
+}
+
+/* ===================== SEGMENTOS ===================== */
+.segmentos {
+  display: flex;
+  gap: 8px;
+  margin: 16px 16px 0;
+  background: var(--pf-card);
+  border: 1px solid var(--pf-card-border);
+  border-radius: 16px;
+  padding: 5px;
+}
+
+.segmento {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--pf-text-faint);
+  font-size: 0.8rem;
   font-weight: 600;
+  padding: 9px 4px;
+  border-radius: 12px;
+
+  ion-icon {
+    font-size: 16px;
+  }
 }
 
-.texto-bienvenida p {
-  margin: 4px 0 0;
-  color: var(--ion-color-medium);
+.segmento--activo {
+  background: var(--pf-red);
+  color: #fff;
+}
+
+/* ===================== CONTENIDO: DIARIO ===================== */
+.nota-card {
+  position: relative;
+  margin: 14px 16px 0;
+  background: var(--pf-card);
+  border: 1px solid var(--pf-card-border);
+  border-radius: 18px;
+  padding: 28px 20px 20px;
+  text-align: center;
+}
+
+.nota-card__icono {
+  font-size: 26px;
+  color: var(--pf-text-faint);
+  margin-bottom: 10px;
+}
+
+.nota-card__texto {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--pf-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.nota-card__editar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #232326;
+  border: 1px solid var(--pf-card-border);
+  color: var(--pf-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* ===================== CONTENIDO: FOTOS ===================== */
+.fotos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 14px 16px 0;
+}
+
+.fotos-grid__item {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--pf-card);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* ===================== ESTADOS VACÍOS (Fotos / Ánimos) ===================== */
+.empty-block {
+  margin: 14px 16px 0;
+  background: var(--pf-card);
+  border: 1px dashed var(--pf-card-border);
+  border-radius: 18px;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--pf-text-faint);
+
+  ion-icon {
+    font-size: 26px;
+    color: var(--pf-red);
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+}
+
+/* ===================== ACCIONES DE PERFIL ===================== */
+.acciones-perfil {
+  display: flex;
+  gap: 10px;
+  margin: 18px 16px 0;
+}
+
+.btn-editar-perfil {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--pf-red) 0%, var(--pf-red-dark) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 13px;
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  ion-icon {
+    font-size: 17px;
+  }
+}
+
+.btn-ia {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pf-card);
+  border: 1px solid var(--pf-card-border);
+  color: var(--pf-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+}
+
+.perfil-bottom-spacer {
+  height: 24px;
 }

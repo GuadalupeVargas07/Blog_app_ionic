@@ -1,0 +1,8 @@
+{
+  "/API_aplicacion1": {
+    "target": "http://localhost",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

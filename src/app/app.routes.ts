@@ -15,14 +15,13 @@ export const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
+    path: 'hm',
+    loadComponent: () => import('./hm/hm.page').then((m) => m.HmPage),
+  },
+  {
     path: '**',
     redirectTo: 'login',
     pathMatch: 'full',
-  },
-
-  {
-    path: 'hm',
-    loadComponent: () => import('./hm/hm.page').then( m => m.HmPage)
   },
 
 ];

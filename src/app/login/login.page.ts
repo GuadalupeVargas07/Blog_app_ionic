@@ -79,50 +79,82 @@ export class LoginPage {
     }
   }
 
-onLogin(): void {
-  console.log('🔵 onLogin() se ejecutó');
-
-  if (!this.loginData.email || !this.loginData.password) {
-    this.mostrarAlerta('Campos incompletos', 'Ingresa correo y contraseña');
-    return;
-  }
-
-  const credentials = {
-    email: this.loginData.email.trim(),
-    password: this.loginData.password.trim()
-  };
-
-  this.authService.login(credentials).subscribe({
-    next: (data: AuthResponse) => {
-      console.log('✅ Respuesta recibida:', data); // <-- agrega esto
-      if (data.status === 'success') {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        console.log('➡️ Navegando a /tabs/tab1...'); // <-- agrega esto
-        this.router.navigate(['/tabs', 'tab1']).then(ok => {
-          console.log('Resultado navigate():', ok); // <-- agrega esto
-        }).catch(err => {
-          console.error('❌ Error en navigate():', err); // <-- agrega esto
-        });
-      } else {
-        this.mostrarAlerta('Atención', data.message || 'Credenciales incorrectas');
-      }
-    },
-    error: (error) => {
-      console.error('❌ Error HTTP:', error); // <-- agrega esto
-      this.mostrarAlerta('Error de inicio de sesión', 'No se pudo conectar con el servidor PHP (Revisa XAMPP o la URL)');
-    }
-  });
-}
-
-  onRegister(): void {
-    if (!this.registerData.nombre) {
-      this.mostrarAlerta('Atención', 'Ingresa tu nombre completo');
+async onLogin(): Promise<void> {
+    if (!this.loginData.email || !this.loginData.password) {
+      this.mostrarAlerta('Campos incompletos', 'Ingresa correo y contraseña');
       return;
     }
-    console.log('Datos listos para enviar a registro:', this.registerData);
-    this.mostrarAlerta('Registro Exitoso', 'Tu usuario se ha creado correctamente');
-    this.mode = 'login';
-    this.currentStep = 1;
+
+    const credentials = {
+      email: this.loginData.email.trim(),
+      password: this.loginData.password.trim(),
+    };
+
+    try {
+      const data = await this.authService.login(credentials);
+      const status = data?.status ?? (data?.success === true ? 'success' : 'error');
+      const user = data?.user ?? null;
+      const message = data?.message ?? 'Credenciales incorrectas';
+
+      if (status === 'success' || data?.success === true) {
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        this.router.navigate(['/tabs', 'tab1']);
+      } else {
+        this.mostrarAlerta('Atención', message);
+      }
+    } catch (error: any) {
+      const backendMessage = error?.response?.data?.message ?? error?.message ?? 'No se pudo conectar con el servidor PHP';
+      this.mostrarAlerta('Error de inicio de sesión', backendMessage);
+    }
+  }
+
+  async onRegister(): Promise<void> {
+    if (!this.registerData.email || !this.registerData.password || !this.registerData.nombre) {
+      this.mostrarAlerta('Atención', 'Ingresa correo, contraseña y nombre completo');
+      return;
+    }
+
+    const payload = {
+      email: this.registerData.email.trim(),
+      password: this.registerData.password.trim(),
+      nombre: this.registerData.nombre.trim(),
+    };
+
+    try {
+      const registerResponse = await this.authService.register(payload);
+      const message = registerResponse?.message || 'Tu usuario se ha creado correctamente';
+
+      try {
+        const loginResponse = await this.authService.login({
+          email: payload.email,
+          password: payload.password,
+        });
+
+        const user = loginResponse?.user ?? {
+          email: payload.email,
+          nombre: payload.nombre,
+        };
+
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      } catch {
+        // Si el login inmediato falla, lo dejamos igual con el registro válido
+      }
+
+      this.mode = 'login';
+      this.currentStep = 1;
+      this.registerData = { email: '', password: '', nombre: '' };
+
+      this.router.navigate(['/tabs', 'tab1']);
+      this.mostrarAlerta('Registro exitoso', message);
+    } catch (error: any) {
+      const backendMessage = error?.response?.data?.message ?? error?.message ?? 'No se pudo registrar el usuario';
+      this.mostrarAlerta('Error de registro', backendMessage);
+    }
   }
 
   async mostrarAlerta(header: string, message: string) {

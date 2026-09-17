@@ -1,34 +1,48 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonButton, AlertController } from '@ionic/angular';
-import { ExploreContainerComponent } from '../explore-container/explore-container.component';
+import {
+  IonContent,
+  IonIcon,
+  ToastController,
+  AlertController,
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { planetOutline } from 'ionicons/icons';
+import {
+  bookOutline,
+  cameraOutline,
+  createOutline,
+  imagesOutline,
+  locationOutline,
+  menuOutline,
+  personCircleOutline,
+  sparklesOutline,
+  planetOutline
+} from 'ionicons/icons';
+import { PhotoService } from '../services/photo.service';
 import axios from 'axios';
 
 @Component({
   selector: 'app-tab1',
-  templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss'],
+  templateUrl: './tab1.page.html',
+  styleUrls: ['./tab1.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     IonContent,
-    IonButton,
-    ExploreContainerComponent,
+    IonIcon,
   ],
 })
 export class Tab1Page implements OnInit {
-  // Asignamos el icono a una variable pública para vincularlo en la vista
-  planetIcon = planetOutline;
+  public photoService = inject(PhotoService);
+  private readonly toastController = inject(ToastController);
+  private readonly alertController = inject(AlertController);
+  private readonly router = inject(Router);
 
-  usuario: any = null;
-
-  private loginUrl = 'http://localhost/login.php';
-  private cuentasUrl ='http://localhost/API_aplicacion1/usuarios.php';
+  // Endpoint base a tu API PHP en XAMPP
+  private readonly apiUrl = 'http://localhost/API_aplicacion1/cuentas.php';
 
   mode: 'login' | 'register' = 'login';
   currentStep: number = 1;
@@ -44,107 +58,176 @@ export class Tab1Page implements OnInit {
     nombre: ''
   };
 
-  constructor(
-    private router: Router,
-    private alertController: AlertController
-  ) {
-    // Registrar explícitamente el icono con la clave exacta
-    addIcons({ 'planet-outline': planetOutline, planetOutline });
+  usuario: any = null;
+
+  activeTab = signal<'diario' | 'fotos' | 'animos'>('diario');
+  coverPhoto = signal<string | null>(null);
+  bio = signal<string>('');
+  handle = computed(() => (this.usuario?.nombre ? `@${this.usuario.nombre.toLowerCase().replace(/\s+/g, '')}` : '@miPerfil'));
+  intereses = signal<string[]>(['Viajes', 'Fotografía', 'Café']);
+  notas = signal<number>(0);
+  animos = signal<number>(0);
+  fotosCount = computed(() => this.photoService.photos().length);
+
+  constructor() {
+    addIcons({
+      'menu-outline': menuOutline,
+      'person-circle-outline': personCircleOutline,
+      'camera-outline': cameraOutline,
+      'create-outline': createOutline,
+      'book-outline': bookOutline,
+      'images-outline': imagesOutline,
+      'location-outline': locationOutline,
+      'sparkles-outline': sparklesOutline,
+      'planet-outline': planetOutline,
+    });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.cargarUsuario();
+    this.coverPhoto.set(localStorage.getItem('coverPhoto'));
+    this.bio.set(this.usuario?.bio ?? '');
+  }
+
+  ionViewWillEnter(): void {
     this.cargarUsuario();
   }
 
-  ionViewWillEnter() {
-    this.cargarUsuario();
-  }
-
-  cargarUsuario() {
+  cargarUsuario(): void {
     const userData = localStorage.getItem('user');
-    if (userData) {
-      this.usuario = JSON.parse(userData);
-    }
+    this.usuario = userData ? JSON.parse(userData) : null;
   }
 
-  logout() {
-    localStorage.removeItem('user');
-    this.router.navigate(['/login']);
-  }
+  // ================= LÓGICA DE REGISTRO / LOGIN CON AXIOS =================
 
-  nextStep() {
-    if (this.currentStep === 1) {
-      if (!this.registerData.email || !this.registerData.password) {
-        this.showAlert('Atención', 'Ingresa correo y contraseña para continuar.');
-        return;
-      }
+  nextStep(): void {
+    if (this.currentStep === 1 && (!this.registerData.email || !this.registerData.password)) {
+      this.showModalError('Campos requeridos', 'Por favor ingresa tu correo y contraseña.');
+      return;
     }
-    if (this.currentStep === 2) {
-      if (!this.registerData.nombre) {
-        this.showAlert('Atención', 'Por favor ingresa tu nombre completo.');
-        return;
-      }
+    if (this.currentStep === 2 && !this.registerData.nombre) {
+      this.showModalError('Campo requerido', 'Por favor escribe tu nombre completo.');
+      return;
     }
     if (this.currentStep < 3) {
       this.currentStep++;
     }
   }
 
-  previousStep() {
+  previousStep(): void {
     if (this.currentStep > 1) {
       this.currentStep--;
     }
   }
 
-  async onLogin() {
+  // POST con Axios -> Login
+  async onLogin(): Promise<void> {
     if (!this.loginData.email || !this.loginData.password) {
-      await this.showAlert('Campos requeridos', 'Ingresa tu correo y contraseña.');
+      this.showModalError('Campos vacíos', 'Ingresa tu correo y contraseña para continuar.');
       return;
     }
 
     try {
-      const response = await axios.post(this.loginUrl, this.loginData);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      this.cargarUsuario();
-      await this.showAlert('¡Bienvenido!', response.data.message || 'Inicio de sesión exitoso.');
+      const response = await axios.post(`${this.apiUrl}?action=login`, this.loginData);
+      
+      if (response.data && response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        this.cargarUsuario();
+      }
+      
+      this.showModalSuccess('¡Bienvenido!', response.data.message || 'Inicio de sesión correcto.');
     } catch (error: any) {
-      this.handleApiError(error);
+      this.handleAxiosError(error);
     }
   }
 
-  async onRegister() {
+  // POST con Axios -> Registro
+  async onRegister(): Promise<void> {
+    if (!this.registerData.email || !this.registerData.password || !this.registerData.nombre) {
+      this.showModalError('Datos incompletos', 'Asegúrate de haber llenado todos los campos del registro.');
+      return;
+    }
+
     try {
-      const response = await axios.post(this.cuentasUrl, this.registerData, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      await this.showAlert('Éxito', response.data.message || 'Cuenta creada correctamente.');
+      // Envía la petición apuntando explícitamente a ?action=register
+      const response = await axios.post(`${this.apiUrl}?action=register`, this.registerData);
       
+      this.showModalSuccess('Registro completado', response.data.message || 'Tu cuenta ha sido creada con éxito.');
+      
+      // Reiniciar vista al formulario de login
       this.mode = 'login';
       this.currentStep = 1;
       this.registerData = { email: '', password: '', nombre: '' };
     } catch (error: any) {
-      this.handleApiError(error);
+      this.handleAxiosError(error);
     }
   }
 
-  private async handleApiError(error: any) {
-    let errorMessage = 'Ocurrió un error inesperado al conectar con el servidor.';
-
+  // Manejo de errores de Axios en Modal
+  private handleAxiosError(error: any): void {
+    let message = 'No se pudo conectar con el servidor. Revisa tu conexión.';
+    
     if (error.response && error.response.data && error.response.data.message) {
-      errorMessage = error.response.data.message;
+      message = error.response.data.message;
     } else if (error.message) {
-      errorMessage = error.message;
+      message = error.message;
     }
 
-    await this.showAlert('Error', errorMessage);
+    this.showModalError('Error de servidor', message);
   }
 
-  private async showAlert(header: string, message: string) {
+  async showModalError(header: string, message: string): Promise<void> {
     const alert = await this.alertController.create({
-      header,
-      message,
-      buttons: ['OK'],
+      header: header,
+      message: message,
+      buttons: ['Aceptar']
     });
     await alert.present();
+  }
+
+  async showModalSuccess(header: string, message: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header: header,
+      message: message,
+      buttons: ['Continuar']
+    });
+    await alert.present();
+  }
+
+  // ================= MÉTODOS EXISTENTES =================
+
+  openMenu(): void {
+    this.comingSoon('Menú');
+  }
+
+  editarPerfil(): void {
+    this.comingSoon('Editar perfil');
+  }
+
+  editarFotoPerfil(): void {
+    this.comingSoon('Cambiar foto de perfil');
+  }
+
+  editarPortada(): void {
+    this.comingSoon('Editar portada');
+  }
+
+  setActiveTab(tab: 'diario' | 'fotos' | 'animos'): void {
+    this.activeTab.set(tab);
+  }
+
+  logout(): void {
+    localStorage.removeItem('user');
+    this.router.navigate(['/login']);
+  }
+
+  async comingSoon(feature: string): Promise<void> {
+    const toast = await this.toastController.create({
+      message: `${feature}: disponible muy pronto ✨`,
+      duration: 1800,
+      position: 'bottom',
+      color: 'dark',
+    });
+    await toast.present();
   }
 }
