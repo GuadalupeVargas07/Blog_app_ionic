@@ -26,4 +26,9 @@ export class AuthService {
 
     return response.data;
   }
+
+  async getProfile(userId: number): Promise<any> {
+    const response = await axios.get(`${this.baseUrl}/cuentas.php?action=get_profile&id=${userId}`);
+    return response.data;
+  }
 }

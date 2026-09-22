@@ -98,7 +98,8 @@ async onLogin(): Promise<void> {
 
       if (status === 'success' || data?.success === true) {
         if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
+          const usuarioFinal = await this.syncUserFromServer(user);
+          localStorage.setItem('user', JSON.stringify(usuarioFinal));
         }
 
         this.router.navigate(['/tabs', 'tab1']);
@@ -139,7 +140,8 @@ async onLogin(): Promise<void> {
         };
 
         if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
+          const usuarioFinal = await this.syncUserFromServer(user);
+          localStorage.setItem('user', JSON.stringify(usuarioFinal));
         }
       } catch {
         // Si el login inmediato falla, lo dejamos igual con el registro válido
@@ -156,7 +158,30 @@ async onLogin(): Promise<void> {
       this.mostrarAlerta('Error de registro', backendMessage);
     }
   }
+  private async syncUserFromServer(user: any): Promise<any> {
+    if (!user?.id) {
+      return user;
+    }
 
+    try {
+      const data = await this.authService.getProfile(user.id);
+      const fullUser = data?.user ?? data;
+
+      if (!fullUser) {
+        return user;
+      }
+
+      return {
+        ...user,
+        ...fullUser,
+        id: fullUser.id ?? user.id,
+        email: fullUser.email ?? user.email,
+        nombre: fullUser.nombre ?? user.nombre,
+      };
+    } catch {
+      return user;
+    }
+  }
   async mostrarAlerta(header: string, message: string) {
     const alert = await this.alertController.create({
       header,

@@ -43,6 +43,66 @@
   border: 1px solid var(--hm-card-border);
   font-size: 20px;
   color: var(--hm-text-muted);
+  overflow: hidden;
+}
+
+.avatar-btn__image,
+.profile-summary__avatar img,
+.entry-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 16px 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(23, 23, 26, 0.9);
+  border: 1px solid var(--hm-card-border);
+}
+
+.profile-summary__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #232326;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--hm-text-muted);
+  font-size: 28px;
+}
+
+.profile-summary__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-summary__eyebrow {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hm-red);
+  margin-bottom: 2px;
+}
+
+.profile-summary__info h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--hm-text);
+}
+
+.profile-summary__info p {
+  margin: 2px 0 0;
+  color: var(--hm-text-muted);
+  font-size: 0.76rem;
 }
 
 /* ===================== TARJETA NUEVA ENTRADA ===================== */
@@ -71,6 +131,7 @@
   justify-content: center;
   font-size: 26px;
   color: var(--hm-text-faint);
+  overflow: hidden;
 }
 
 .entry-input {
@@ -95,6 +156,12 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+.entry-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .chip {
@@ -158,7 +225,7 @@
 
 .quick-nav__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr); // 3 columnas: Buscar, Todas, Recuerdos
   gap: 8px;
 }
 
@@ -497,12 +564,26 @@
   right: 0;
   bottom: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-around;
+  align-items: stretch;
+  justify-content: space-between;
   background: #0d0d0f;
-  border-top: 1px solid var(--hm-card-border);
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 8px calc(8px + env(safe-area-inset-bottom));
   z-index: 10;
+  height: 78px;
+}
+
+.hm-tabbar__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.hm-tabbar__group--left,
+.hm-tabbar__group--right {
+  gap: 10px;
 }
 
 .hm-tab {
@@ -511,12 +592,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   color: var(--hm-text-faint);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: 0.03em;
-  flex: 1;
+  height: 100%;
+  min-width: 0;
+  flex: 1 1 0;
+  text-align: center;
 
   ion-icon {
     font-size: 21px;
@@ -530,14 +615,23 @@
 .hm-tab--fab {
   background: var(--hm-red);
   color: #fff;
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  min-height: 54px;
   border-radius: 50%;
-  margin-top: -22px;
-  box-shadow: 0 4px 14px rgba(230, 51, 84, 0.5);
-  flex: 0 0 48px;
+  margin-top: -18px;
+  box-shadow: 0 0 0 5px rgba(230, 51, 84, 0.12), 0 8px 18px rgba(230, 51, 84, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 54px; // clave: evita que el .hm-tab general lo estire (flex: 1 1 0)
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 
   ion-icon {
-    font-size: 26px;
+    font-size: 28px;
+    margin: 0;
   }
 }

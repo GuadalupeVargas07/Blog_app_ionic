@@ -35,3 +35,85 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+.perfil-modal {
+  --background: rgba(8, 9, 12, 0.78);
+  --backdrop-opacity: 0.7;
+}
+
+.perfil-modal .alert-wrapper {
+  background: #17171a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.perfil-modal .alert-head {
+  background: linear-gradient(180deg, rgba(230, 51, 84, 0.12), transparent);
+  padding: 18px 18px 8px;
+}
+
+.perfil-modal .alert-title {
+  color: #f4f4f5;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.perfil-modal .alert-message {
+  color: #d7d7dc;
+}
+
+.perfil-modal .alert-input-group {
+  padding: 0 16px 12px;
+}
+
+.perfil-modal .alert-input {
+  background: #202124;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #f4f4f5;
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+
+.perfil-modal .alert-input:focus {
+  border-color: rgba(230, 51, 84, 0.8);
+  box-shadow: 0 0 0 2px rgba(230, 51, 84, 0.18);
+}
+
+.perfil-modal .alert-button-group {
+  padding: 0 16px 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.perfil-modal--large .alert-wrapper {
+  width: min(92vw, 560px);
+  max-width: 560px;
+}
+
+.perfil-modal__button {
+  border-radius: 12px;
+  font-weight: 700;
+  min-height: 42px;
+}
+
+.perfil-modal__button--primary {
+  --background: #e63354;
+  --background-hover: #ff4d6d;
+  --color: #fff;
+}
+
+.perfil-modal__button--cancel {
+  --background: transparent;
+  --color: #d7d7dc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.perfil-modal--simple .alert-head,
+.perfil-modal--simple .alert-message,
+.perfil-modal--simple .alert-button-group {
+  padding-left: 18px;
+  padding-right: 18px;
+}

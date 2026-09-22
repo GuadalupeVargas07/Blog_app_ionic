@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonContent,
   IonIcon,
@@ -35,12 +36,6 @@ import {
 } from 'ionicons/icons';
 import { PhotoService } from '../services/photo.service';
 
-/**
- * Estas interfaces describen la forma que tendrán los datos reales
- * (entradas del diario, capturas compartidas y estados de ánimo)
- * una vez que el backend/API los provea. Por ahora, en una cuenta
- * nueva, los arreglos correspondientes están vacíos a propósito.
- */
 export interface DiaryEntry {
   id: string;
   title: string;
@@ -81,28 +76,28 @@ export interface MoodEntry {
 })
 export class HmPage implements OnInit {
   public photoService = inject(PhotoService);
-  private toastController = inject(ToastController);
+  private readonly toastController = inject(ToastController);
+  private readonly router = inject(Router);
 
-  // ---------------------------------------------------------------
-  // Datos de la cuenta. Al ser una cuenta nueva, todo inicia vacío;
-  // cuando el backend entregue datos reales, basta con hacer
-  // this.entries.set([...]) / this.captures.set([...]) / this.moods.set([...])
-  // y las vistas dejarán de mostrar el estado vacío automáticamente.
-  // ---------------------------------------------------------------
+  usuario = signal<any | null>(null);
   entries = signal<DiaryEntry[]>([]);
   captures = signal<SharedCapture[]>([]);
   moods = signal<MoodEntry[]>([]);
   daysRegistered = signal<number>(0);
 
-  // Estado propio de la interfaz
   quickNavExpanded = signal(true);
   newEntryTextModel = '';
 
-  // Datos derivados (lo último de cada lista, o null si no hay nada)
   latestEntry = computed(() => this.entries()[0] ?? null);
   latestCapture = computed(() => this.captures()[0] ?? null);
   latestMood = computed(() => this.moods()[0] ?? null);
   photosCount = computed(() => this.photoService.photos().length);
+  profilePhoto = computed(() => this.usuario()?.foto_perfil || this.usuario()?.foto || null);
+  displayName = computed(() => this.usuario()?.nombre || 'Mi perfil');
+  handle = computed(() => {
+    const alias = this.usuario()?.username || this.usuario()?.nombre || 'miPerfil';
+    return `@${String(alias).toLowerCase().replace(/\s+/g, '')}`;
+  });
 
   constructor() {
     addIcons({
@@ -133,9 +128,19 @@ export class HmPage implements OnInit {
   }
 
   async ngOnInit() {
-    // Carga las fotos ya guardadas en el dispositivo (si las hay).
-    // En una cuenta nueva esto simplemente resuelve en un arreglo vacío.
+    this.cargarUsuarioYEntradas();
     await this.photoService.loadSaved();
+  }
+
+  private cargarUsuarioYEntradas(): void {
+    const rawUser = localStorage.getItem('user');
+    const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+    this.usuario.set(parsedUser);
+
+    const storedEntries = localStorage.getItem('hmEntries');
+    const entries = storedEntries ? JSON.parse(storedEntries) : [];
+    this.entries.set(Array.isArray(entries) ? entries : []);
+    this.daysRegistered.set(this.entries().length);
   }
 
   toggleQuickNav(): void {
@@ -144,6 +149,50 @@ export class HmPage implements OnInit {
 
   async addPhoto(): Promise<void> {
     await this.photoService.addNewToGallery();
+  }
+
+  async publishEntry(): Promise<void> {
+    const content = this.newEntryTextModel.trim();
+    if (!content) {
+      const toast = await this.toastController.create({
+        message: 'Escribe algo antes de publicar.',
+        duration: 1800,
+        position: 'bottom',
+        color: 'warning',
+      });
+      await toast.present();
+      return;
+    }
+
+    const entry: DiaryEntry = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
+      title: this.usuario()?.nombre ? `Historia de ${this.usuario().nombre}` : 'Mi historia',
+      excerpt: content.length > 180 ? `${content.slice(0, 177)}...` : content,
+      date: new Date().toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+      readTime: `${Math.max(1, Math.ceil(content.split(/\s+/).filter(Boolean).length / 180))} min`,
+    };
+
+    const nextEntries = [entry, ...this.entries()];
+    this.entries.set(nextEntries);
+    this.daysRegistered.set(nextEntries.length);
+    localStorage.setItem('hmEntries', JSON.stringify(nextEntries));
+    this.newEntryTextModel = '';
+
+    const toast = await this.toastController.create({
+      message: 'Tu historia se ha guardado en tu perfil.',
+      duration: 1800,
+      position: 'bottom',
+      color: 'success',
+    });
+    await toast.present();
+  }
+
+  openProfile(): void {
+    this.router.navigate(['/tabs', 'tab1']);
   }
 
   async comingSoon(feature: string): Promise<void> {

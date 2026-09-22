@@ -1,28 +1,65 @@
 <ion-content class="perfil-content" [fullscreen]="true">
 
+  <!-- ===================== INPUTS OCULTOS PARA SUBIR FOTOS DESDE EL EQUIPO ===================== -->
+  <input
+    type="file"
+    accept="image/png, image/jpeg, image/webp, image/gif"
+    #fotoPerfilInput
+    class="input-file-oculto"
+    (change)="onFotoPerfilSeleccionada($event)"
+  />
+  <input
+    type="file"
+    accept="image/png, image/jpeg, image/webp, image/gif"
+    #fotoPortadaInput
+    class="input-file-oculto"
+    (change)="onFotoPortadaSeleccionada($event)"
+  />
+
   <!-- ===================== HEADER ===================== -->
   <div class="perfil-topbar">
-    <button class="icon-btn" (click)="openMenu()" aria-label="Menú">
+    <button class="icon-btn" (click)="toggleMenu()" aria-label="Menú">
       <ion-icon name="menu-outline"></ion-icon>
     </button>
 
-    <button class="topbar-avatar" (click)="editarFotoPerfil()" aria-label="Foto de perfil">
-      @if (usuario?.foto) {
-        <img [src]="usuario!.foto" alt="Foto de perfil" />
+    <button class="topbar-avatar" (click)="editarFotoPerfil()" [disabled]="subiendoFoto()" aria-label="Foto de perfil">
+      @if (usuario?.foto_perfil || usuario?.foto) {
+        <img [src]="usuario?.foto_perfil || usuario?.foto" alt="Foto de perfil" />
       } @else {
         <ion-icon name="person-circle-outline"></ion-icon>
       }
     </button>
   </div>
 
+  @if (menuOpen()) {
+    <div class="menu-backdrop" (click)="closeMenu()"></div>
+    <aside class="perfil-menu" role="menu" aria-label="Menú principal">
+      <div class="perfil-menu__header">
+        <span>Menú</span>
+      </div>
+
+      <button class="perfil-menu__item" (click)="goToHome()">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Home</span>
+      </button>
+
+      <div class="perfil-menu__divider"></div>
+
+      <button class="perfil-menu__item perfil-menu__item--danger" (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <span>Cerrar sesión</span>
+      </button>
+    </aside>
+  }
+
   <!-- ===================== PORTADA ===================== -->
   <div class="cover" [class.cover--empty]="!coverPhoto()">
     @if (coverPhoto()) {
       <img [src]="coverPhoto()!" alt="Foto de portada" />
     }
-    <button class="cover__edit-btn" (click)="editarPortada()">
+    <button class="cover__edit-btn" (click)="editarPortada()" [disabled]="subiendoFoto()">
       <ion-icon name="camera-outline"></ion-icon>
-      Editar portada
+      {{ subiendoFoto() ? 'Subiendo...' : 'Editar portada' }}
     </button>
   </div>
 
@@ -30,22 +67,19 @@
   <div class="perfil-card">
     <div class="avatar-wrap">
       <div class="avatar-perfil">
-        @if (usuario?.foto) {
-          <img [src]="usuario!.foto" alt="Foto de perfil" />
+        @if (usuario?.foto_perfil || usuario?.foto) {
+          <img [src]="usuario?.foto_perfil || usuario?.foto" alt="Foto de perfil" />
         } @else {
           <ion-icon name="person-circle-outline" class="icono-default"></ion-icon>
         }
       </div>
-      <button class="avatar-edit-btn" (click)="editarFotoPerfil()" aria-label="Cambiar foto">
+      <button class="avatar-edit-btn" (click)="editarFotoPerfil()" [disabled]="subiendoFoto()" aria-label="Cambiar foto">
         <ion-icon name="camera-outline"></ion-icon>
       </button>
     </div>
 
     @if (usuario) {
       <h1 class="perfil-nombre">{{ usuario.nombre }}</h1>
-      @if (handle()) {
-        <p class="perfil-handle">{{ handle() }}</p>
-      }
     }
 
     @if (bio()) {
@@ -153,9 +187,6 @@
     <button class="btn-editar-perfil" (click)="editarPerfil()">
       <ion-icon name="create-outline"></ion-icon>
       Editar perfil
-    </button>
-    <button class="btn-ia" (click)="comingSoon('Asistente de perfil')" aria-label="Asistente">
-      <ion-icon name="sparkles-outline"></ion-icon>
     </button>
   </div>
 

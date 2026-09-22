@@ -6,16 +6,38 @@
       <ion-icon name="menu-outline"></ion-icon>
     </button>
 
-    <button class="avatar-btn" (click)="comingSoon('Perfil')" aria-label="Perfil">
-      <ion-icon name="person-circle-outline"></ion-icon>
+    <button class="avatar-btn" (click)="openProfile()" aria-label="Perfil">
+      @if (profilePhoto(); as photo) {
+        <img [src]="photo" alt="Perfil" class="avatar-btn__image" />
+      } @else {
+        <ion-icon name="person-circle-outline"></ion-icon>
+      }
     </button>
+  </div>
+
+  <div class="profile-summary" (click)="openProfile()" role="button" tabindex="0" (keydown.enter)="openProfile()" (keydown.space)="openProfile()">
+    <div class="profile-summary__avatar">
+      @if (profilePhoto(); as photo) {
+        <img [src]="photo" alt="Perfil" />
+      } @else {
+        <ion-icon name="person-circle-outline"></ion-icon>
+      }
+    </div>
+    <div class="profile-summary__info">
+      <span class="profile-summary__eyebrow">Perfil activo</span>
+      <h2>{{ displayName() }}</h2>
+    </div>
   </div>
 
   <!-- ================= NUEVA ENTRADA ================= -->
   <div class="entry-card">
     <div class="entry-card__row">
       <div class="entry-avatar">
-        <ion-icon name="person-circle-outline"></ion-icon>
+        @if (profilePhoto(); as photo) {
+          <img [src]="photo" alt="Perfil" />
+        } @else {
+          <ion-icon name="person-circle-outline"></ion-icon>
+        }
       </div>
       <ion-textarea
         class="entry-input"
@@ -35,9 +57,11 @@
         <ion-icon name="sparkles-outline"></ion-icon>
         <span>Estado Astral / Ánimo</span>
       </button>
-      <button class="chip" (click)="comingSoon('Etiquetas')">
-        <ion-icon name="pricetag-outline"></ion-icon>
-        <span>Etiquetas</span>
+    </div>
+
+    <div class="entry-card__footer">
+      <button class="btn-primary" (click)="publishEntry()" [disabled]="!newEntryTextModel.trim()">
+        Publicar <ion-icon name="arrow-forward-outline"></ion-icon>
       </button>
     </div>
   </div>
@@ -68,10 +92,6 @@
         <button class="quick-nav__item" (click)="comingSoon('Recuerdos')">
           <ion-icon name="time-outline"></ion-icon>
           <span>Recuerdos</span>
-        </button>
-        <button class="quick-nav__item" (click)="comingSoon('Ajustes')">
-          <ion-icon name="options-outline"></ion-icon>
-          <span>Ajustes</span>
         </button>
       </div>
     }
@@ -188,23 +208,29 @@
 
 <!-- ===================== TAB BAR ===================== -->
 <div class="hm-tabbar">
-  <button class="hm-tab hm-tab--active">
-    <ion-icon name="home"></ion-icon>
-    <span>HOME</span>
-  </button>
-  <button class="hm-tab" (click)="comingSoon('Diary')">
-    <ion-icon name="book-outline"></ion-icon>
-    <span>DIARY</span>
-  </button>
-  <button class="hm-tab hm-tab--fab" (click)="comingSoon('Nueva entrada')" aria-label="Crear">
+  <div class="hm-tabbar__group hm-tabbar__group--left">
+    <button class="hm-tab hm-tab--active">
+      <ion-icon name="home"></ion-icon>
+      <span>HOME</span>
+    </button>
+    <button class="hm-tab" (click)="comingSoon('Diary')">
+      <ion-icon name="book-outline"></ion-icon>
+      <span>DIARY</span>
+    </button>
+  </div>
+
+  <button class="hm-tab hm-tab--fab" (click)="publishEntry()" aria-label="Crear">
     <ion-icon name="add"></ion-icon>
   </button>
-  <button class="hm-tab" (click)="comingSoon('Moods')">
-    <ion-icon name="grid-outline"></ion-icon>
-    <span>MOODS</span>
-  </button>
-  <button class="hm-tab" (click)="comingSoon('Profile')">
-    <ion-icon name="person-outline"></ion-icon>
-    <span>PROFILE</span>
-  </button>
+
+  <div class="hm-tabbar__group hm-tabbar__group--right">
+    <button class="hm-tab" (click)="comingSoon('Moods')">
+      <ion-icon name="grid-outline"></ion-icon>
+      <span>MOODS</span>
+    </button>
+    <button class="hm-tab" (click)="openProfile()">
+      <ion-icon name="person-outline"></ion-icon>
+      <span>PROFILE</span>
+    </button>
+  </div>
 </div>
