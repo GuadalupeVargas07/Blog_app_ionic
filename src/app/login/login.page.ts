@@ -13,6 +13,8 @@ import {
   AlertController,
 } from '@ionic/angular';
 import { AuthService } from '../services/auth';
+import { ApiConfigService } from '../services/api-config.service';
+import { ApiDiagnosticsService } from '../services/api-diagnostics.service';
 
 // 1. Definición de la interfaz para tipar la respuesta de PHP
 interface AuthResponse {
@@ -45,6 +47,7 @@ interface AuthResponse {
 export class LoginPage {
   mode: 'login' | 'register' = 'login';
   currentStep: number = 1;
+  serverOrigin = '';
 
   loginData = {
     email: '',
@@ -60,8 +63,26 @@ export class LoginPage {
   constructor(
     private router: Router,
     private alertController: AlertController,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private apiConfig: ApiConfigService,
+    readonly apiDiagnostics: ApiDiagnosticsService,
+  ) {
+    this.serverOrigin = this.apiConfig.getServerOriginInput();
+  }
+
+  async guardarServidor(): Promise<void> {
+    try {
+      this.apiConfig.setServerOrigin(this.serverOrigin);
+      this.serverOrigin = this.apiConfig.getServerOriginInput();
+      await this.mostrarAlerta('Servidor guardado', 'Las pantallas usarán esta dirección para conectarse a la API.');
+    } catch (error: any) {
+      await this.mostrarAlerta('Dirección inválida', error?.message ?? 'Revisa la IP y el puerto HTTP.');
+    }
+  }
+
+  abrirOrigenDatos(): void {
+    void this.router.navigate(['/data-source']);
+  }
 
   nextStep(): void {
     if (this.currentStep === 1 && (!this.registerData.email || !this.registerData.password)) {
@@ -79,7 +100,7 @@ export class LoginPage {
     }
   }
 
-async onLogin(): Promise<void> {
+  async onLogin(): Promise<void> {
     if (!this.loginData.email || !this.loginData.password) {
       this.mostrarAlerta('Campos incompletos', 'Ingresa correo y contraseña');
       return;
@@ -91,6 +112,7 @@ async onLogin(): Promise<void> {
     };
 
     try {
+      this.apiConfig.setServerOrigin(this.serverOrigin);
       const data = await this.authService.login(credentials);
       const status = data?.status ?? (data?.success === true ? 'success' : 'error');
       const user = data?.user ?? null;
@@ -99,16 +121,18 @@ async onLogin(): Promise<void> {
       if (status === 'success' || data?.success === true) {
         if (user) {
           const usuarioFinal = await this.syncUserFromServer(user);
-          localStorage.setItem('user', JSON.stringify(usuarioFinal));
+          if (usuarioFinal?.id || usuarioFinal?.email) {
+            localStorage.setItem('user', JSON.stringify(usuarioFinal));
+          }
         }
 
         this.router.navigate(['/tabs', 'tab1']);
       } else {
-        this.mostrarAlerta('Atención', message);
+        this.apiDiagnostics.reportApplicationError(message);
       }
     } catch (error: any) {
       const backendMessage = error?.response?.data?.message ?? error?.message ?? 'No se pudo conectar con el servidor PHP';
-      this.mostrarAlerta('Error de inicio de sesión', backendMessage);
+      this.apiDiagnostics.reportApplicationError(backendMessage);
     }
   }
 
@@ -125,6 +149,7 @@ async onLogin(): Promise<void> {
     };
 
     try {
+      this.apiConfig.setServerOrigin(this.serverOrigin);
       const registerResponse = await this.authService.register(payload);
       const message = registerResponse?.message || 'Tu usuario se ha creado correctamente';
 
@@ -155,31 +180,42 @@ async onLogin(): Promise<void> {
       this.mostrarAlerta('Registro exitoso', message);
     } catch (error: any) {
       const backendMessage = error?.response?.data?.message ?? error?.message ?? 'No se pudo registrar el usuario';
-      this.mostrarAlerta('Error de registro', backendMessage);
+      this.apiDiagnostics.reportApplicationError(backendMessage);
     }
   }
   private async syncUserFromServer(user: any): Promise<any> {
-    if (!user?.id) {
-      return user;
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    const fallbackId = user?.id ?? storedUser?.id ?? null;
+
+    if (!fallbackId) {
+      return {
+        ...(storedUser ?? {}),
+        ...(user ?? {}),
+        email: user?.email ?? storedUser?.email ?? '',
+        nombre: user?.nombre ?? storedUser?.nombre ?? '',
+      };
     }
 
     try {
-      const data = await this.authService.getProfile(user.id);
-      const fullUser = data?.user ?? data;
-
-      if (!fullUser) {
-        return user;
-      }
+      const data = await this.authService.getProfile(fallbackId);
+      const fullUser = data?.user ?? data ?? {};
 
       return {
-        ...user,
-        ...fullUser,
-        id: fullUser.id ?? user.id,
-        email: fullUser.email ?? user.email,
-        nombre: fullUser.nombre ?? user.nombre,
+        ...(storedUser ?? {}),
+        ...(user ?? {}),
+        ...(fullUser ?? {}),
+        id: fullUser.id ?? user.id ?? storedUser?.id ?? fallbackId,
+        email: fullUser.email ?? user.email ?? storedUser?.email ?? '',
+        nombre: fullUser.nombre ?? user.nombre ?? storedUser?.nombre ?? '',
       };
     } catch {
-      return user;
+      return {
+        ...(storedUser ?? {}),
+        ...(user ?? {}),
+        id: user.id ?? storedUser?.id ?? fallbackId,
+        email: user.email ?? storedUser?.email ?? '',
+        nombre: user.nombre ?? storedUser?.nombre ?? '',
+      };
     }
   }
   async mostrarAlerta(header: string, message: string) {

@@ -24,6 +24,10 @@ import {
 } from 'ionicons/icons';
 import { PhotoService } from '../services/photo.service';
 import { StorageService } from '../services/storage.service';
+import { HmApiService, DiaryEntry, MoodEntry, SharedCapture } from '../services/hm-api.service';
+import { ApiConfigService } from '../services/api-config.service';
+import { ApiDiagnosticsService } from '../services/api-diagnostics.service';
+import { ApiCacheService } from '../services/api-cache.service';
 import axios from 'axios';
 
 @Component({
@@ -44,11 +48,18 @@ export class Tab1Page implements OnInit {
   private readonly toastController = inject(ToastController);
   private readonly alertController = inject(AlertController);
   private readonly router = inject(Router);
+  private readonly hmApi = inject(HmApiService);
+  private readonly apiConfig = inject(ApiConfigService);
+  private readonly apiDiagnostics = inject(ApiDiagnosticsService);
+  private readonly apiCache = inject(ApiCacheService);
 
-  // Endpoint base a tu API PHP en XAMPP
-  private readonly apiUrl = 'http://localhost/API_aplicacion1/cuentas.php';
-  // Endpoint para subir imágenes (perfil / portada) a la carpeta /uploads de la API
-  private readonly uploadUrl = 'http://localhost/API_aplicacion1/upload.php';
+  private get apiUrl(): string {
+    return `${this.apiConfig.getApiBaseUrl()}/cuentas.php`;
+  }
+
+  private get uploadUrl(): string {
+    return `${this.apiConfig.getApiBaseUrl()}/upload.php`;
+  }
 
   // Referencias a los <input type="file"> ocultos (se disparan por click)
   @ViewChild('fotoPerfilInput') fotoPerfilInput?: ElementRef<HTMLInputElement>;
@@ -77,6 +88,13 @@ export class Tab1Page implements OnInit {
   activeTab = signal<'diario' | 'fotos' | 'animos'>('diario');
   coverPhoto = signal<string | null>(null);
   bio = signal<string>('');
+  miniText = signal<string>('');
+  diaryItems = signal<DiaryEntry[]>([]);
+  photoItems = signal<SharedCapture[]>([]);
+  moodItems = signal<MoodEntry[]>([]);
+  latestDiary = computed(() => this.ordenarRecientes(this.diaryItems())[0] ?? null);
+  latestPhoto = computed(() => this.ordenarRecientes(this.photoItems())[0] ?? null);
+  latestMood = computed(() => this.ordenarRecientes(this.moodItems())[0] ?? null);
   handle = computed(() => {
     const alias = this.usuario?.username || this.usuario?.nombre;
     if (!alias) {
@@ -85,9 +103,9 @@ export class Tab1Page implements OnInit {
     return `@${String(alias).toLowerCase().replace(/\s+/g, '')}`;
   });
   intereses = signal<string[]>(['Viajes', 'Fotografía', 'Café']);
-  notas = signal<number>(0);
-  animos = signal<number>(0);
-  fotosCount = computed(() => this.photoService.photos().length);
+  notas = computed(() => this.diaryItems().length);
+  animos = computed(() => this.moodItems().length);
+  fotosCount = computed(() => this.photoItems().length);
 
   constructor() {
     addIcons({
@@ -109,6 +127,7 @@ export class Tab1Page implements OnInit {
     this.cargarUsuario();
     await this.cargarUsuarioPersistido();
     await this.refrescarPerfilDesdeServidor();
+    await this.cargarContenidoReciente();
   }
 
   ionViewWillEnter(): void {
@@ -140,6 +159,7 @@ export class Tab1Page implements OnInit {
       return;
     }
 
+    this.apiCache.clearFallback();
     try {
       const response = await axios.get(`${this.apiUrl}?action=get_profile&id=${userId}`);
       const perfilActualizado = response.data?.user ?? response.data ?? null;
@@ -192,13 +212,106 @@ export class Tab1Page implements OnInit {
     this.usuario = userData ? JSON.parse(userData) : null;
 
     if (this.usuario) {
+      const profilePhoto = this.apiConfig.resolveAssetUrl(this.usuario.foto_perfil || this.usuario.foto);
+      const coverPhoto = this.apiConfig.resolveAssetUrl(
+        this.usuario.foto_portada || this.usuario.portada || localStorage.getItem('coverPhoto'),
+      );
+      this.usuario = {
+        ...this.usuario,
+        foto_perfil: profilePhoto,
+        foto: profilePhoto,
+        foto_portada: coverPhoto,
+      };
       this.bio.set(this.usuario.bio ?? '');
-      this.coverPhoto.set(this.usuario.foto_portada || localStorage.getItem('coverPhoto'));
+      this.coverPhoto.set(coverPhoto);
       this.intereses.set(this.normalizarIntereses(this.usuario.intereses));
     } else {
       this.bio.set('');
-      this.coverPhoto.set(localStorage.getItem('coverPhoto'));
+      this.coverPhoto.set(this.apiConfig.resolveAssetUrl(localStorage.getItem('coverPhoto')));
       this.intereses.set(['Viajes', 'Fotografía', 'Café']);
+    }
+
+    void this.cargarContenidoReciente();
+  }
+
+  private ordenarRecientes<T extends { date?: string; id?: number }>(items: T[]): T[] { 
+    return [...items].sort((a, b) => {
+      const aDate = a.date ? new Date(a.date).getTime() : 0;
+      const bDate = b.date ? new Date(b.date).getTime() : 0;
+      return bDate - aDate || Number(b.id ?? 0) - Number(a.id ?? 0);
+    });
+  }
+
+  private obtenerTextoControlado(tab: 'diario' | 'fotos' | 'animos'): string {
+    switch (tab) {
+      case 'diario': {
+        const item = this.latestDiary();
+        if (!item) {
+          return this.bio() || 'Escribe en tu diario';
+        }
+        const resumen = (item.excerpt ?? '').trim();
+        return resumen.length > 90 ? `${resumen.slice(0, 87)}...` : resumen || item.title || 'Escribe en tu diario';
+      }
+      case 'fotos': {
+        const item = this.latestPhoto();
+        if (!item) {
+          return this.bio() || 'Comparte una foto';
+        }
+        const resumen = (item.caption ?? '').trim();
+        return resumen.length > 90 ? `${resumen.slice(0, 87)}...` : resumen || 'Foto compartida';
+      }
+      default: {
+        const item = this.latestMood();
+        if (!item) {
+          return this.bio() || 'Registra tu estado de ánimo';
+        }
+        const resumen = (item.name ?? '').trim();
+        return resumen || item.vibe || 'Estado de ánimo';
+      }
+    }
+  }
+
+  private async cargarContenidoReciente(): Promise<void> {
+    const userData = localStorage.getItem('user');
+    const userId = userData ? JSON.parse(userData)?.id : this.usuario?.id;
+    if (!userId) {
+      this.diaryItems.set([]);
+      this.photoItems.set([]);
+      this.moodItems.set([]);
+      this.miniText.set(this.bio() || 'Escribe en tu diario');
+      return;
+    }
+
+    try {
+      const [diary, photos, moods] = await Promise.all([
+        this.hmApi.getDiary(Number(userId)),
+        this.hmApi.getCaptures(Number(userId)),
+        this.hmApi.getMoods(Number(userId)),
+      ]);
+
+      this.diaryItems.set(diary ?? []);
+      this.photoItems.set(photos ?? []);
+      this.moodItems.set(moods ?? []);
+      this.miniText.set(this.obtenerTextoControlado(this.activeTab()));
+      const fallbackMessage = this.apiCache.fallbackMessage();
+      if (fallbackMessage) {
+        const toast = await this.toastController.create({
+          message: fallbackMessage,
+          duration: 3500,
+          position: 'bottom',
+          color: 'warning',
+        });
+        await toast.present();
+      }
+      // Aseguramos que el perfil muestre los conteos reales de cada tipo de contenido.
+      this.notas();
+      this.animos();
+      this.fotosCount();
+    } catch {
+      this.diaryItems.set([]);
+      this.photoItems.set([]);
+      this.moodItems.set([]);
+      this.miniText.set(this.bio() || 'Escribe en tu diario');
     }
   }
 
@@ -281,7 +394,7 @@ export class Tab1Page implements OnInit {
       message = error.message;
     }
 
-    this.showModalError('Error de servidor', message);
+    this.apiDiagnostics.reportApplicationError(message);
   }
 
   async showModalError(header: string, message: string): Promise<void> {
@@ -346,7 +459,7 @@ private async guardarPerfilEnApi(payload: Record<string, any>): Promise<void> {
   } catch (error: any) {
     const errorMsg = error?.response?.data?.message || error.message;
     console.warn('No se pudo guardar el perfil en la API:', errorMsg);
-    this.showModalError('Error al guardar', errorMsg);
+    this.apiDiagnostics.reportApplicationError(errorMsg);
   }
 }
 
@@ -363,9 +476,13 @@ private async guardarPerfilEnApi(payload: Record<string, any>): Promise<void> {
   }): void {
     const user = this.usuario ?? { id: null, nombre: '', username: '', email: '' };
 
-    const nombre = (data.nombre ?? user.nombre ?? '').trim();
-    const bio = (data.bio ?? user.bio ?? '').trim();
-    const intereses = this.normalizarIntereses(data.intereses ?? user.intereses ?? this.intereses());
+    const nombre = (data.nombre === undefined ? user.nombre ?? '' : data.nombre).trim();
+    const bio = (data.bio === undefined ? user.bio ?? '' : data.bio).trim();
+    const intereses = Array.isArray(data.intereses)
+      ? this.normalizarIntereses(data.intereses)
+      : data.intereses === undefined
+        ? this.normalizarIntereses(user.intereses ?? this.intereses())
+        : [];
     const fotoPerfil = (data.foto_perfil ?? data.foto ?? user.foto_perfil ?? user.foto ?? '').trim();
     const portada = (data.foto_portada ?? data.portada ?? user.foto_portada ?? user.portada ?? localStorage.getItem('coverPhoto') ?? '').trim();
 
@@ -447,16 +564,16 @@ private async guardarPerfilEnApi(payload: Record<string, any>): Promise<void> {
           cssClass: 'perfil-modal__button perfil-modal__button--primary',
           handler: (data) => {
             const nombre = data.nombre?.trim();
-            const bio = data.bio?.trim();
+            const bio = data.bio == null ? '' : String(data.bio).trim();
             const intereses = (data.intereses ?? '')
               .split(',')
               .map((item: string) => item.trim())
               .filter(Boolean);
 
             this.guardarPerfil({
-              nombre: nombre || this.usuario?.nombre,
-              bio: bio || '',
-              intereses: intereses.length > 0 ? intereses : this.intereses(),
+              nombre: nombre ?? this.usuario?.nombre ?? '',
+              bio,
+              intereses,
             });
 
             this.showModalSuccess('Perfil actualizado', 'Los cambios se guardaron correctamente.');
@@ -573,6 +690,7 @@ private async guardarPerfilEnApi(payload: Record<string, any>): Promise<void> {
 
   setActiveTab(tab: 'diario' | 'fotos' | 'animos'): void {
     this.activeTab.set(tab);
+    this.miniText.set(this.obtenerTextoControlado(tab));
   }
 
   logout(): void {

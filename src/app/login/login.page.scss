@@ -158,6 +158,67 @@ $shadows-big: multiple-box-shadow(50);
   }
 }
 
+.server-label {
+  display: block;
+  margin: 0 0 6px;
+  color: #ccc;
+  font-size: 12px;
+  text-align: left;
+}
+
+.server-help {
+  margin: -8px 0 12px;
+  color: #999;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.server-save {
+  --color: #ff7779;
+  --border-color: rgba(230, 38, 42, 0.45);
+  --border-radius: 8px;
+  margin: 0 0 18px;
+  font-size: 12px;
+}
+
+.connection-status {
+  display: grid;
+  gap: 4px;
+  margin: -2px 0 16px;
+  padding: 10px 12px;
+  border-left: 3px solid #d29336;
+  background: rgba(255, 255, 255, 0.045);
+  color: #d7d8d8;
+  font-size: 12px;
+  text-align: left;
+
+  span,
+  p {
+    margin: 0;
+    color: #aeb4b3;
+    overflow-wrap: anywhere;
+  }
+}
+
+.connection-error {
+  border-color: #e64e52;
+}
+
+.connection-success {
+  border-color: #43b88d;
+}
+
+.diagnostic-link {
+  justify-self: start;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #ff8587;
+  font: inherit;
+  cursor: pointer;
+}
+
 /* ===== Botones ===== */
 .btn-red {
   --background: linear-gradient(135deg, #e6262a, #8b0000);

@@ -1,0 +1,74 @@
+:host {
+	.api-diagnostic-fab {
+		margin: 0 8px 12px 0;
+	}
+}
+
+.api-diagnostic-content {
+	--background: #f5f7f5;
+	--color: #182321;
+}
+
+.diagnostic-summary {
+	padding: 14px;
+	border-left: 4px solid #17856f;
+	background: #e7f3ee;
+	border-radius: 4px;
+}
+
+.diagnostic-summary.diagnostic-error {
+	border-color: #c23d42;
+	background: #f9e9e8;
+}
+
+.diagnostic-status {
+	font-weight: 700;
+}
+
+.diagnostic-summary p {
+	margin: 6px 0 0;
+}
+
+.diagnostic-details {
+	display: grid;
+	grid-template-columns: minmax(100px, 0.4fr) minmax(0, 1fr);
+	gap: 8px 14px;
+	margin: 20px 0;
+	font-size: 13px;
+}
+
+.diagnostic-details dt {
+	color: #60706c;
+	font-weight: 600;
+}
+
+.diagnostic-details dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.diagnostic-url {
+	font-family: monospace;
+}
+
+.api-diagnostic-content h2 {
+	margin: 18px 0 8px;
+	font-size: 15px;
+}
+
+.api-diagnostic-content pre {
+	max-height: 38vh;
+	overflow: auto;
+	padding: 12px;
+	color: #eaf2ed;
+	background: #17211f;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.diagnostic-note {
+	color: #60706c;
+	font-size: 12px;
+}

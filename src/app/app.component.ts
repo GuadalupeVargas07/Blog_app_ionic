@@ -1,12 +1,45 @@
-import { Component } from '@angular/core';
-import { IonApp, IonRouterOutlet } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  IonApp,
+  IonButton,
+  IonContent,
+  IonFab,
+  IonFabButton,
+  IonHeader,
+  IonIcon,
+  IonModal,
+  IonRouterOutlet,
+  IonTitle,
+  IonToolbar,
+} from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { pulseOutline } from 'ionicons/icons';
+import { ApiDiagnosticsService } from './services/api-diagnostics.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  imports: [IonApp, IonRouterOutlet],
+  imports: [
+    CommonModule,
+    IonApp,
+    IonButton,
+    IonContent,
+    IonFab,
+    IonFabButton,
+    IonHeader,
+    IonIcon,
+    IonModal,
+    IonRouterOutlet,
+    IonTitle,
+    IonToolbar,
+  ],
 })
 export class AppComponent {
-  constructor() {}
+  readonly diagnostics = inject(ApiDiagnosticsService);
+
+  constructor() {
+    addIcons({ 'pulse-outline': pulseOutline });
+  }
 }

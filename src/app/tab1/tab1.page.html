@@ -147,25 +147,38 @@
 
   <!-- ===================== CONTENIDO: DIARIO ===================== -->
   @if (activeTab() === 'diario') {
-    <div class="nota-card">
-      <ion-icon name="book-outline" class="nota-card__icono"></ion-icon>
-      <p class="nota-card__texto">Aún no has escrito ninguna nota.</p>
-      <button class="nota-card__editar" (click)="comingSoon('Nueva nota')">
-        <ion-icon name="create-outline"></ion-icon>
-      </button>
-    </div>
+    @if (latestDiary(); as entry) {
+      <div class="nota-card nota-card--filled">
+        <div class="nota-card__header">
+          @if (entry.title) {
+            <ion-icon name="book-outline" class="nota-card__icono"></ion-icon>
+            <span>{{ entry.title }}</span>
+          }
+        </div>
+        <p class="nota-card__texto">{{ entry.excerpt.length > 160 ? (entry.excerpt | slice:0:157) + '...' : entry.excerpt }}</p>
+        <div class="nota-card__meta">
+          <small>{{ entry.date }}</small>
+          <small>{{ entry.readTime }}</small>
+        </div>
+      </div>
+    } @else {
+      <div class="nota-card">
+        <p class="nota-card__texto">Aún no has escrito ninguna nota.</p>
+      </div>
+    }
   }
 
   <!-- ===================== CONTENIDO: FOTOS ===================== -->
   @if (activeTab() === 'fotos') {
-    @if (photoService.photos().length > 0) {
-      <div class="fotos-grid">
-        @for (photo of photoService.photos(); track photo.filepath) {
-          <div class="fotos-grid__item">
-            <img [src]="photo.webviewPath" alt="Foto" loading="lazy" />
-          </div>
-        }
+    @if (latestPhoto(); as photo) {
+      <div class="fotos-grid fotos-grid--single">
+        <div class="fotos-grid__item fotos-grid__item--single">
+          <img [src]="photo.imageUrl" alt="Foto" loading="lazy" />
+        </div>
       </div>
+      @if (photo.caption) {
+        <div class="foto-caption">{{ photo.caption.length > 120 ? (photo.caption | slice:0:117) + '...' : photo.caption }}</div>
+      }
     } @else {
       <div class="empty-block">
         <ion-icon name="images-outline"></ion-icon>
@@ -176,16 +189,29 @@
 
   <!-- ===================== CONTENIDO: ÁNIMOS ===================== -->
   @if (activeTab() === 'animos') {
-    <div class="empty-block">
-      <ion-icon name="location-outline"></ion-icon>
-      <p>Aún no registras estados de ánimo.</p>
-    </div>
+    @if (latestMood(); as mood) {
+      <div class="empty-block empty-block--mood">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        <h3>{{ mood.name }}</h3>
+        @if (mood.vibe) {
+          <span class="mood-badge">{{ mood.vibe }}</span>
+        }
+        <p>Energía: {{ mood.energy }}%</p>
+        @if (mood.music) {
+          <small>{{ mood.music }}</small>
+        }
+      </div>
+    } @else {
+      <div class="empty-block">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        <p>Aún no registras estados de ánimo.</p>
+      </div>
+    }
   }
 
   <!-- ===================== EDITAR PERFIL ===================== -->
   <div class="acciones-perfil">
     <button class="btn-editar-perfil" (click)="editarPerfil()">
-      <ion-icon name="create-outline"></ion-icon>
       Editar perfil
     </button>
   </div>

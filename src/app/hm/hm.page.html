@@ -29,9 +29,12 @@
     </div>
   </div>
 
-  <!-- ================= NUEVA ENTRADA ================= -->
+  <!-- ================= NUEVA PUBLICACIÓN ================= -->
+  <!-- Input de archivo oculto (fuera de bloques @if para que todos los botones lo alcancen) -->
+  <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+
   <div class="entry-card">
-    <div class="entry-card__row">
+    <div class="composer-head">
       <div class="entry-avatar">
         @if (profilePhoto(); as photo) {
           <img [src]="photo" alt="Perfil" />
@@ -39,29 +42,134 @@
           <ion-icon name="person-circle-outline"></ion-icon>
         }
       </div>
-      <ion-textarea
-        class="entry-input"
-        placeholder="¿Qué historia o pensamiento tienes hoy?"
-        [autoGrow]="true"
-        rows="1"
-        [(ngModel)]="newEntryTextModel"
-      ></ion-textarea>
+      <div class="composer-head__text">
+        <strong>{{ displayName() }}</strong>
+        <span>
+          @switch (mode()) {
+            @case ('diario') { Escribe en tu diario }
+            @case ('foto') { Comparte una captura }
+            @default { Registra tu estado de ánimo }
+          }
+        </span>
+      </div>
     </div>
 
-    <div class="entry-card__actions">
-      <button class="chip" (click)="addPhoto()">
-        <ion-icon name="camera-outline"></ion-icon>
-        <span>Añadir Foto</span>
+    <!-- Selector de tipo: cada uno llena una tabla distinta -->
+    <div class="mode-tabs">
+      <button class="mode-tab" [class.mode-tab--active]="mode() === 'diario'" (click)="setMode('diario')">
+        <ion-icon name="book-outline"></ion-icon> Diario
       </button>
-      <button class="chip" (click)="comingSoon('Estado Astral / Ánimo')">
-        <ion-icon name="sparkles-outline"></ion-icon>
-        <span>Estado Astral / Ánimo</span>
+      <button class="mode-tab" [class.mode-tab--active]="mode() === 'foto'" (click)="setMode('foto')">
+        <ion-icon name="camera-outline"></ion-icon> Foto
       </button>
+      <button class="mode-tab" [class.mode-tab--active]="mode() === 'animo'" (click)="setMode('animo')">
+        <ion-icon name="sparkles-outline"></ion-icon> Ánimo
+      </button>
+    </div>
+
+    <div class="form-fields">
+
+        <!-- ============ DIARIO  →  diary_entries (title, excerpt, read_time) ============ -->
+        @if (mode() === 'diario') {
+          <label class="field">
+            <span class="field__label">Título <em>*</em></span>
+            <input class="text-input" type="text" maxlength="255"
+                   placeholder="Ej. Reflexión sobre el proyecto"
+                   [(ngModel)]="diaryForm.title" name="diaryTitle" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Tu historia o pensamiento <em>*</em></span>
+            <textarea class="text-input text-input--area" rows="4"
+                      placeholder="¿Qué historia o pensamiento tienes hoy?"
+                      [(ngModel)]="diaryForm.excerpt" name="diaryExcerpt"></textarea>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Tiempo de lectura</span>
+            <input class="text-input" type="text" maxlength="50"
+                   [placeholder]="'Automático: ' + autoReadTime()"
+                   [(ngModel)]="diaryForm.readTime" name="diaryReadTime" />
+          </label>
+        }
+
+        <!-- ============ FOTO  →  shared_captures (image_url, caption, location) ============ -->
+        @if (mode() === 'foto') {
+          <div class="field">
+            <span class="field__label">Imagen <em>*</em></span>
+            @if (pendingPhotoPreview(); as preview) {
+              <div class="pending-photo">
+                <img [src]="preview" alt="Foto seleccionada" />
+                <button class="pending-photo__remove" (click)="clearPendingPhoto()" aria-label="Quitar foto">
+                  <ion-icon name="close-outline"></ion-icon>
+                </button>
+              </div>
+            } @else {
+              <button class="photo-drop" (click)="addPhoto(fileInput)">
+                <ion-icon name="camera-outline"></ion-icon>
+                <span>Elegir o tomar una foto</span>
+                <small>JPG, PNG, GIF o WEBP · máx. 5 MB</small>
+              </button>
+            }
+          </div>
+
+          <label class="field">
+            <span class="field__label">Pie de foto</span>
+            <textarea class="text-input text-input--area" rows="2"
+                      placeholder="Cuenta algo sobre esta captura..."
+                      [(ngModel)]="captureForm.caption" name="captureCaption"></textarea>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Ubicación</span>
+            <input class="text-input" type="text" maxlength="150"
+                   placeholder="Ej. Durango, México"
+                   [(ngModel)]="captureForm.location" name="captureLocation" />
+          </label>
+        }
+
+        <!-- ============ ÁNIMO  →  mood_entries (name, vibe, energy, music) ============ -->
+        @if (mode() === 'animo') {
+          <label class="field">
+            <span class="field__label">¿Cómo te sientes? <em>*</em></span>
+            <input class="text-input" type="text" maxlength="100"
+                   placeholder="Ej. Melancólico, Inspirado..."
+                   [(ngModel)]="moodForm.name" name="moodName" />
+          </label>
+
+          <div class="field">
+            <span class="field__label">Vibra</span>
+            <div class="vibe-chips">
+              @for (v of vibeOptions; track v) {
+                <button type="button" class="vibe-chip" [class.vibe-chip--active]="moodForm.vibe === v"
+                        (click)="moodForm.vibe = moodForm.vibe === v ? '' : v">{{ v }}</button>
+              }
+            </div>
+            <input class="text-input" type="text" maxlength="100"
+                   placeholder="...o escribe la tuya"
+                   [(ngModel)]="moodForm.vibe" name="moodVibe" />
+          </div>
+
+          <label class="field">
+            <span class="field__label field__label--row">Energía <strong>{{ moodForm.energy }}%</strong></span>
+            <input class="range" type="range" min="0" max="100" step="5"
+                   [style.--fill]="moodForm.energy + '%'"
+                   [(ngModel)]="moodForm.energy" name="moodEnergy" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Música</span>
+            <input class="text-input" type="text" maxlength="255"
+                   placeholder="Ej. Lo-fi, Radiohead - Creep"
+                   [(ngModel)]="moodForm.music" name="moodMusic" />
+          </label>
+        }
     </div>
 
     <div class="entry-card__footer">
-      <button class="btn-primary" (click)="publishEntry()" [disabled]="!newEntryTextModel.trim()">
-        Publicar <ion-icon name="arrow-forward-outline"></ion-icon>
+      <span class="entry-card__note"><em>*</em> Obligatorio</span>
+      <button class="btn-primary" (click)="publish()" [disabled]="!canPublish() || publishing()">
+        {{ publishing() ? 'Guardando...' : publishLabel() }} <ion-icon name="arrow-forward-outline"></ion-icon>
       </button>
     </div>
   </div>
@@ -97,90 +205,193 @@
     }
   </div>
 
-  <!-- ============== ÚLTIMA HISTORIA / VACÍO ============== -->
-  @if (latestEntry(); as entry) {
-    <div class="feature-card">
-      <div class="feature-card__meta">
-        <span><ion-icon name="time-outline"></ion-icon> {{ entry.date }}</span>
-        <ion-icon name="star-outline" class="feature-card__star"></ion-icon>
-      </div>
-      <h2 class="feature-card__title">{{ entry.title }}</h2>
-      <p class="feature-card__quote">"{{ entry.excerpt }}"</p>
-      <div class="feature-card__footer">
-        <span class="feature-card__read"><ion-icon name="time-outline"></ion-icon> {{ entry.readTime }}</span>
-        <button class="btn-primary">Leer completa <ion-icon name="arrow-forward-outline"></ion-icon></button>
-      </div>
-    </div>
-  } @else {
-    <div class="empty-card">
-      <div class="empty-card__icon">
-        <ion-icon name="book-outline"></ion-icon>
-      </div>
-      <h3>Aún no tienes historias</h3>
-      <p>Escribe tu primer pensamiento y aparecerá destacado aquí.</p>
-    </div>
-  }
-
-  <!-- ========== ÚLTIMA CAPTURA COMPARTIDA / VACÍO ========== -->
-  <div class="section-header">
-    <span class="section-header__dot"></span>
-    <h3>Última captura compartida</h3>
-  </div>
-
-  @if (latestCapture(); as capture) {
-    <div class="capture-card">
-      <div class="capture-card__tag">
-        <ion-icon name="location-outline"></ion-icon>
-        {{ capture.location }}
-      </div>
-      <img [src]="capture.imageUrl" [alt]="capture.caption" />
-      <p class="capture-card__caption">{{ capture.caption }}</p>
-    </div>
-  } @else {
-    <div class="empty-card">
-      <div class="empty-card__icon">
-        <ion-icon name="images-outline"></ion-icon>
-      </div>
-      <h3>Aún no has compartido capturas</h3>
-      <p>Tus fotos aparecerán aquí en cuanto compartas la primera.</p>
-      <button class="btn-outline" (click)="addPhoto()">
-        <ion-icon name="camera-outline"></ion-icon>
-        Tomar una foto
-      </button>
-    </div>
-  }
-
-  <!-- ========== ÚLTIMO ESTADO DE ÁNIMO / VACÍO ========== -->
-  @if (latestMood(); as mood) {
-    <div class="mood-card">
-      <div class="mood-card__header">
-        <ion-icon name="sparkles-outline"></ion-icon>
-        <span>ÚLTIMO ESTADO DE ÁNIMO PUBLICADO</span>
-      </div>
-      <div class="mood-card__title-row">
-        <div class="mood-card__name">
-          <ion-icon name="moon-outline"></ion-icon>
-          {{ mood.name }}
+  <!-- ============== SECCIÓN ACTIVA SEGÚN EL MODAL ACTIVO ============== -->
+  @switch (mode()) {
+    @case ('diario') {
+      @if (orderedEntries().length) {
+        <div class="section-header">
+          <span class="section-header__dot"></span>
+          <h3>Historial del diario</h3>
         </div>
-        <span class="mood-card__badge">{{ mood.vibe }}</span>
+
+        @for (entry of orderedEntries(); track entry.id) {
+          <div class="feature-card">
+            <div class="feature-card__header">
+              <div class="feature-card__meta">
+                <span><ion-icon name="time-outline"></ion-icon> {{ entry.date }}</span>
+                <ion-icon name="star-outline" class="feature-card__star"></ion-icon>
+              </div>
+              <button class="card-menu" (click)="toggleCardMenu('diario', entry.id)" aria-label="Más opciones">⋯</button>
+              @if (selectedMenu()?.type === 'diario' && selectedMenu()?.id === entry.id) {
+                <div class="card-menu__panel">
+                  <button type="button" (click)="openPreview('diario', entry)">Ver</button>
+                  <button type="button" (click)="startEdit('diario', entry)">Editar</button>
+                  <button type="button" (click)="deleteItem('diario', entry.id)">Eliminar</button>
+                </div>
+              }
+            </div>
+            <h2 class="feature-card__title">{{ entry.title }}</h2>
+            <p class="feature-card__quote">"{{ entry.excerpt.length > 90 ? (entry.excerpt | slice:0:87) + '...' : entry.excerpt }}"</p>
+            <div class="feature-card__footer">
+              <span class="feature-card__read"><ion-icon name="time-outline"></ion-icon> {{ entry.readTime }}</span>
+              <button class="btn-primary" (click)="openPreview('diario', entry)">Leer completa <ion-icon name="arrow-forward-outline"></ion-icon></button>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="empty-card">
+          <div class="empty-card__icon">
+            <ion-icon name="book-outline"></ion-icon>
+          </div>
+          <h3>Aún no tienes historias</h3>
+          <p>Escribe tu primer pensamiento y aparecerá destacado aquí.</p>
+          <button class="btn-outline" (click)="goToForm('diario')">
+            <ion-icon name="book-outline"></ion-icon>
+            Escribir en mi diario
+          </button>
+        </div>
+      }
+    }
+    @case ('foto') {
+      @if (orderedCaptures().length) {
+        <div class="section-header">
+          <span class="section-header__dot"></span>
+          <h3>Fotos compartidas</h3>
+        </div>
+
+        @for (capture of orderedCaptures(); track capture.id) {
+          <div class="capture-card">
+            <button class="card-menu card-menu--capture" (click)="toggleCardMenu('foto', capture.id)" aria-label="Más opciones">⋯</button>
+            @if (selectedMenu()?.type === 'foto' && selectedMenu()?.id === capture.id) {
+              <div class="card-menu__panel card-menu__panel--capture">
+                <button type="button" (click)="openPreview('foto', capture)">Ver</button>
+                <button type="button" (click)="startEdit('foto', capture)">Editar</button>
+                <button type="button" (click)="deleteItem('foto', capture.id)">Eliminar</button>
+              </div>
+            }
+            @if (capture.location) {
+              <div class="capture-card__tag">
+                <ion-icon name="location-outline"></ion-icon>
+                {{ capture.location }}
+              </div>
+            }
+            <img [src]="capture.imageUrl" [alt]="capture.caption" />
+            <p class="capture-card__caption">{{ capture.caption.length > 90 ? (capture.caption | slice:0:87) + '...' : capture.caption }}</p>
+          </div>
+        }
+      } @else {
+        <div class="empty-card">
+          <div class="empty-card__icon">
+            <ion-icon name="images-outline"></ion-icon>
+          </div>
+          <h3>Aún no has compartido capturas</h3>
+          <p>Tus fotos aparecerán aquí en cuanto compartas la primera.</p>
+          <button class="btn-outline" (click)="goToForm('foto')">
+            <ion-icon name="camera-outline"></ion-icon>
+            Subir una foto
+          </button>
+        </div>
+      }
+    }
+    @default {
+      @if (orderedMoods().length) {
+        <div class="section-header">
+          <span class="section-header__dot"></span>
+          <h3>Estados de ánimo</h3>
+        </div>
+
+        @for (mood of orderedMoods(); track mood.id) {
+          <div class="mood-card">
+            <button class="card-menu card-menu--mood" (click)="toggleCardMenu('animo', mood.id)" aria-label="Más opciones">⋯</button>
+            @if (selectedMenu()?.type === 'animo' && selectedMenu()?.id === mood.id) {
+              <div class="card-menu__panel card-menu__panel--mood">
+                <button type="button" (click)="openPreview('animo', mood)">Ver</button>
+                <button type="button" (click)="startEdit('animo', mood)">Editar</button>
+                <button type="button" (click)="deleteItem('animo', mood.id)">Eliminar</button>
+              </div>
+            }
+            <div class="mood-card__header">
+              <ion-icon name="sparkles-outline"></ion-icon>
+              <span>ESTADO DE ÁNIMO</span>
+            </div>
+            <div class="mood-card__title-row">
+              <div class="mood-card__name">
+                <ion-icon name="moon-outline"></ion-icon>
+                {{ mood.name }}
+              </div>
+              @if (mood.vibe) {
+                <span class="mood-card__badge">{{ mood.vibe }}</span>
+              }
+            </div>
+            @if (mood.music || mood.vibe) {
+              <div class="mood-card__preview">
+                {{ mood.music || mood.vibe || 'Sin detalle adicional' }}
+              </div>
+            }
+            <div class="mood-card__tags">
+              <span><ion-icon name="sparkles-outline"></ion-icon> Energía: {{ mood.energy }}%</span>
+              @if (mood.music) {
+                <span>Música: {{ mood.music }}</span>
+              }
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="empty-card">
+          <div class="empty-card__icon">
+            <ion-icon name="moon-outline"></ion-icon>
+          </div>
+          <h3>Aún no registras tu ánimo de hoy</h3>
+          <p>Comparte cómo te sientes y lo verás reflejado aquí.</p>
+          <button class="btn-outline" (click)="goToForm('animo')">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            Registrar estado de ánimo
+          </button>
+        </div>
+      }
+    }
+  }
+
+  @if (previewItem(); as preview) {
+    <div class="preview-modal-backdrop" (click)="closePreview()">
+      <div class="preview-modal" (click)="$event.stopPropagation()">
+        <button type="button" class="preview-modal__close" (click)="closePreview()" aria-label="Cerrar">×</button>
+
+        @switch (preview.type) {
+          @case ('diario') {
+            <span class="preview-modal__eyebrow">Historia</span>
+            <h3>{{ preview.title }}</h3>
+            <div class="preview-modal__meta">
+              <span><ion-icon name="time-outline"></ion-icon> {{ preview.date }}</span>
+              <span><ion-icon name="book-outline"></ion-icon> {{ preview.readTime }}</span>
+            </div>
+            <p>{{ preview.excerpt }}</p>
+          }
+          @case ('foto') {
+            <span class="preview-modal__eyebrow">Captura</span>
+            <h3>{{ preview.caption || 'Foto compartida' }}</h3>
+            @if (preview.location) {
+              <div class="preview-modal__location"><ion-icon name="location-outline"></ion-icon> {{ preview.location }}</div>
+            }
+            @if (preview.imageUrl) {
+              <img [src]="preview.imageUrl" alt="preview" class="preview-modal__image" />
+            }
+          }
+          @default {
+            <span class="preview-modal__eyebrow">Estado de ánimo</span>
+            <h3>{{ preview.name }}</h3>
+            <div class="preview-modal__meta">
+              <span><ion-icon name="sparkles-outline"></ion-icon> {{ preview.energy }}%</span>
+              @if (preview.vibe) {
+                <span>{{ preview.vibe }}</span>
+              }
+            </div>
+            @if (preview.music) {
+              <div class="preview-modal__location"><ion-icon name="sparkles-outline"></ion-icon> {{ preview.music }}</div>
+            }
+          }
+        }
       </div>
-      <p class="mood-card__quote">"{{ mood.name }}"</p>
-      <div class="mood-card__tags">
-        <span><ion-icon name="sparkles-outline"></ion-icon> Energía: {{ mood.energy }}%</span>
-        <span>Música: {{ mood.music }}</span>
-      </div>
-    </div>
-  } @else {
-    <div class="empty-card">
-      <div class="empty-card__icon">
-        <ion-icon name="moon-outline"></ion-icon>
-      </div>
-      <h3>Aún no registras tu ánimo de hoy</h3>
-      <p>Comparte cómo te sientes y lo verás reflejado aquí.</p>
-      <button class="btn-outline" (click)="comingSoon('Registrar estado de ánimo')">
-        <ion-icon name="sparkles-outline"></ion-icon>
-        Registrar estado de ánimo
-      </button>
     </div>
   }
 
@@ -213,18 +424,18 @@
       <ion-icon name="home"></ion-icon>
       <span>HOME</span>
     </button>
-    <button class="hm-tab" (click)="comingSoon('Diary')">
+    <button class="hm-tab" (click)="goToForm('diario')">
       <ion-icon name="book-outline"></ion-icon>
       <span>DIARY</span>
     </button>
   </div>
 
-  <button class="hm-tab hm-tab--fab" (click)="publishEntry()" aria-label="Crear">
+  <button class="hm-tab hm-tab--fab" (click)="goToForm(mode())" aria-label="Crear">
     <ion-icon name="add"></ion-icon>
   </button>
 
   <div class="hm-tabbar__group hm-tabbar__group--right">
-    <button class="hm-tab" (click)="comingSoon('Moods')">
+    <button class="hm-tab" (click)="goToForm('animo')">
       <ion-icon name="grid-outline"></ion-icon>
       <span>MOODS</span>
     </button>

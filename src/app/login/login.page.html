@@ -24,8 +24,43 @@
       <h2 class="fs-title">Bienvenido de nuevo</h2>
       <h3 class="fs-subtitle">Accede a tu cuenta</h3>
 
+      <label class="server-label" for="server-origin">Servidor API (URL o IP:puerto)</label>
+      <ion-input
+        id="server-origin"
+        class="dark-input"
+        type="text"
+        inputmode="url"
+        placeholder="http://192.168.1.20:80"
+        autocomplete="off"
+        [(ngModel)]="serverOrigin">
+      </ion-input>
+      <p class="server-help">Usa la IP de tu laptop y el puerto de Apache/PHP. MySQL usa 3306 internamente.</p>
+      <ion-button expand="block" fill="outline" class="server-save" (click)="guardarServidor()">
+        Guardar servidor
+      </ion-button>
+      <ion-button expand="block" fill="clear" class="server-save" (click)="abrirOrigenDatos()">
+        Configuración avanzada
+      </ion-button>
+
       <ion-input class="dark-input" type="email" placeholder="Email" [(ngModel)]="loginData.email"></ion-input>
       <ion-input class="dark-input" type="password" placeholder="Contraseña" [(ngModel)]="loginData.password"></ion-input>
+
+      <section
+        class="connection-status"
+        [class.connection-error]="apiDiagnostics.diagnostic().status === 'error'"
+        [class.connection-success]="apiDiagnostics.diagnostic().status === 'connected'"
+        aria-live="polite">
+        <strong>Conexión API: {{ apiDiagnostics.statusLabel() }}</strong>
+        <span>{{ apiDiagnostics.diagnostic().host || serverOrigin || 'IP no configurada' }}</span>
+        <p>{{ apiDiagnostics.diagnostic().message }}</p>
+        <button
+          *ngIf="apiDiagnostics.diagnostic().url"
+          type="button"
+          class="diagnostic-link"
+          (click)="apiDiagnostics.openModal()">
+          Ver payload y destino
+        </button>
+      </section>
 
       <a class="forgot-link">¿Olvidaste tu contraseña?</a>
 

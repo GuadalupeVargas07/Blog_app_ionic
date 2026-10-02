@@ -19,6 +19,10 @@ export const routes: Routes = [
         loadComponent: () => import('../tab3/tab3.page').then((m) => m.Tab3Page),
       },
       {
+        path: 'data-source',
+        loadComponent: () => import('../data-source/data-source.page').then((m) => m.DataSourcePage),
+      },
+      {
         path: '',
         redirectTo: 'tab1',
         pathMatch: 'full',

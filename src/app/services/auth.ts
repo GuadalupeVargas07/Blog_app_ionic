@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
 import axios from 'axios';
+import { ApiConfigService } from './api-config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly baseUrl = 'http://localhost/API_aplicacion1';
+  constructor(private readonly apiConfig: ApiConfigService) {}
+
+  private get baseUrl(): string {
+    return this.apiConfig.getApiBaseUrl();
+  }
 
   async login(credentials: { email: string; password: string }): Promise<any> {
     const response = await axios.post(`${this.baseUrl}/login.php`, credentials, {

@@ -1,3 +1,49 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+
+  <ion-fab
+    *ngIf="diagnostics.diagnostic().url"
+    slot="fixed"
+    vertical="bottom"
+    horizontal="end"
+    class="api-diagnostic-fab">
+    <ion-fab-button size="small" aria-label="Ver diagnóstico de API" (click)="diagnostics.openModal()">
+      <ion-icon name="pulse-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal
+    [isOpen]="diagnostics.modalOpen()"
+    (didDismiss)="diagnostics.dismissModal()"
+    aria-label="Diagnóstico de API">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Diagnóstico de API</ion-title>
+          <ion-button slot="end" fill="clear" (click)="diagnostics.dismissModal()">Cerrar</ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding api-diagnostic-content">
+        <section class="diagnostic-summary" [class.diagnostic-error]="diagnostics.diagnostic().status === 'error'">
+          <span class="diagnostic-status">{{ diagnostics.statusLabel() }}</span>
+          <p>{{ diagnostics.diagnostic().message }}</p>
+        </section>
+
+        <dl class="diagnostic-details">
+          <dt>Método</dt>
+          <dd>{{ diagnostics.diagnostic().method || 'Sin solicitud' }}</dd>
+          <dt>IP y puerto destino</dt>
+          <dd>{{ diagnostics.diagnostic().host || 'No disponibles' }}</dd>
+          <dt>Endpoint</dt>
+          <dd class="diagnostic-url">{{ diagnostics.diagnostic().url || 'No disponible' }}</dd>
+          <dt>Estado HTTP</dt>
+          <dd>{{ diagnostics.diagnostic().httpStatus ?? 'Sin respuesta HTTP' }}</dd>
+        </dl>
+
+        <h2>Payload enviado</h2>
+        <pre>{{ diagnostics.diagnostic().payload }}</pre>
+        <p class="diagnostic-note">Los campos de contraseña, token y autorización se ocultan por seguridad.</p>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-app>

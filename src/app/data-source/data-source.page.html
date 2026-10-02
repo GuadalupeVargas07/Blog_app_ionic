@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Origen de datos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding data-source-page">
+  <main class="data-source-form">
+    <p class="eyebrow">Conexión de la aplicación</p>
+    <h1>Servidor de la API</h1>
+    <p class="intro">Configura la dirección de la laptop que aloja Apache y PHP. El valor queda guardado en este dispositivo.</p>
+
+    <ion-segment [(ngModel)]="protocol" aria-label="Protocolo">
+      <ion-segment-button value="http">
+        <ion-label>HTTP</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="https">
+        <ion-label>HTTPS</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <label for="server-host">IP o nombre del equipo</label>
+    <ion-input
+      id="server-host"
+      class="config-input"
+      type="text"
+      inputmode="url"
+      placeholder="192.168.1.20"
+      autocomplete="off"
+      [(ngModel)]="host">
+    </ion-input>
+
+    <label for="server-port">Puerto HTTP de Apache/PHP</label>
+    <ion-input
+      id="server-port"
+      class="config-input"
+      type="number"
+      inputmode="numeric"
+      min="1"
+      max="65535"
+      placeholder="80"
+      [(ngModel)]="port">
+    </ion-input>
+
+    <p class="hint">El celular y la laptop deben estar en la misma red. 3306 corresponde a MySQL, no al puerto de esta API.</p>
+
+    <ion-button expand="block" (click)="guardar()">Guardar origen</ion-button>
+    <p class="feedback" [class.feedback-success]="saved" role="status" aria-live="polite" *ngIf="message">
+      {{ message }}
+    </p>
+  </main>
+</ion-content>
