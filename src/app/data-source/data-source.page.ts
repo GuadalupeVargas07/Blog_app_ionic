@@ -55,10 +55,17 @@ export class DataSourcePage implements OnInit {
       this.protocol = config.protocol;
       this.host = config.host;
       this.port = config.port;
+    } else {
+      this.host = '192.168.1.66';
+      this.port = '80';
     }
   }
 
   guardar(): void {
+    if (this.port === '3306') {
+      this.port = '80';
+      this.message = 'Se ajustó al puerto 80 (Apache HTTP). Las consultas a MySQL (3306) se realizan internamente desde PHP en tu laptop.';
+    }
     try {
       this.apiConfig.saveServerConfig({
         protocol: this.protocol,

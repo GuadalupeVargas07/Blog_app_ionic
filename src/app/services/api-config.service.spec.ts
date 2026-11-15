@@ -19,12 +19,20 @@ describe('ApiConfigService', () => {
     expect(service.getApiBaseUrl()).toBe('http://192.168.1.45:8080/API_aplicacion1');
   });
 
+  it('accepts a laptop IPv4 and its HTTP port from the login input', () => {
+    expect(service.setServerOrigin('192.168.1.66:80'))
+      .toBe('http://192.168.1.66/API_aplicacion1');
+    expect(service.getServerOriginInput()).toBe('http://192.168.1.66:80');
+  });
+
   it('does not default to localhost when no server is saved', () => {
     expect(() => service.getApiBaseUrl()).toThrowError(/Configura la IP/);
   });
 
   it('rejects the MySQL port as an API port', () => {
     expect(() => service.saveServerConfig({ protocol: 'http', host: '192.168.1.45', port: '3306' }))
+      .toThrowError(/puerto de MySQL/);
+    expect(() => service.setServerOrigin('192.168.1.45:3306'))
       .toThrowError(/puerto de MySQL/);
   });
 

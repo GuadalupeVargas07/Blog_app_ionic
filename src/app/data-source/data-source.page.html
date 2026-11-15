@@ -28,7 +28,7 @@
       class="config-input"
       type="text"
       inputmode="url"
-      placeholder="192.168.1.20"
+      placeholder="192.168.1.66"
       autocomplete="off"
       [(ngModel)]="host">
     </ion-input>
@@ -45,7 +45,7 @@
       [(ngModel)]="port">
     </ion-input>
 
-    <p class="hint">El celular y la laptop deben estar en la misma red. 3306 corresponde a MySQL, no al puerto de esta API.</p>
+    <p class="hint">El celular y la laptop deben estar en la misma red Wi-Fi. Las APIs responden por el puerto web de Apache (por defecto 80), el cual se comunica internamente con la base de datos MySQL en el puerto 3306.</p>
 
     <ion-button expand="block" (click)="guardar()">Guardar origen</ion-button>
     <p class="feedback" [class.feedback-success]="saved" role="status" aria-live="polite" *ngIf="message">

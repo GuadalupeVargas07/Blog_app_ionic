@@ -23,6 +23,10 @@ export const routes: Routes = [
         loadComponent: () => import('../data-source/data-source.page').then((m) => m.DataSourcePage),
       },
       {
+        path: 'bluetooth',
+        loadComponent: () => import('../bluetooth-transfer/bluetooth-transfer.page').then((m) => m.BluetoothTransferPage),
+      },
+      {
         path: '',
         redirectTo: 'tab1',
         pathMatch: 'full',

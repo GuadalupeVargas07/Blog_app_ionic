@@ -23,9 +23,16 @@ export const routes: Routes = [
     loadComponent: () => import('./hm/hm.page').then((m) => m.HmPage),
   },
   {
+    path: 'graficas',
+    loadComponent: () => import('./graficas/graficas.page').then((m) => m.GraficasPage),
+  },
+  {
+    path: 'datosperfil',
+    loadComponent: () => import('./datosperfil/datosperfil.page').then((m) => m.DatosperfilPage),
+  },
+  {
     path: '**',
     redirectTo: 'login',
     pathMatch: 'full',
   },
-
 ];

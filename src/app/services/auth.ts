@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import axios from 'axios';
 import { ApiConfigService } from './api-config.service';
 
@@ -6,16 +6,16 @@ import { ApiConfigService } from './api-config.service';
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private readonly apiConfig: ApiConfigService) {}
-
-  private get baseUrl(): string {
-    return this.apiConfig.getApiBaseUrl();
-  }
+  private readonly apiConfig = inject(ApiConfigService);
 
   async login(credentials: { email: string; password: string }): Promise<any> {
-    const response = await axios.post(`${this.baseUrl}/login.php`, credentials, {
+    const formData = new URLSearchParams({
+      email: credentials.email,
+      password: credentials.password,
+    });
+    const response = await axios.post(`${this.apiConfig.getApiBaseUrl()}/login.php`, formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
       },
     });
 
@@ -23,7 +23,7 @@ export class AuthService {
   }
 
   async register(userData: { email: string; password: string; nombre: string }): Promise<any> {
-    const response = await axios.post(`${this.baseUrl}/cuentas.php?action=register`, userData, {
+    const response = await axios.post(`${this.apiConfig.getApiBaseUrl()}/cuentas.php?action=register`, userData, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -33,7 +33,7 @@ export class AuthService {
   }
 
   async getProfile(userId: number): Promise<any> {
-    const response = await axios.get(`${this.baseUrl}/cuentas.php?action=get_profile&id=${userId}`);
+    const response = await axios.get(`${this.apiConfig.getApiBaseUrl()}/cuentas.php?action=get_profile&id=${userId}`);
     return response.data;
   }
 }

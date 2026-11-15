@@ -1,0 +1,120 @@
+<ion-header>
+  <ion-toolbar class="dark-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Datos del perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="dark-bg">
+  <main class="editor">
+
+    <!-- ===== Portada ===== -->
+    <section class="cover" [style.backgroundImage]="fotoPortadaPreview ? 'url(' + fotoPortadaPreview + ')' : null">
+      <button class="cover-edit-btn" type="button" (click)="inputPortada.click()" [disabled]="guardando">
+        <ion-icon name="camera-outline"></ion-icon>
+        Editar portada
+      </button>
+      <input #inputPortada type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden (change)="onSeleccionarFotoPortada($event)" />
+
+      <!-- ===== Avatar ===== -->
+      <div class="avatar-wrap">
+        <div class="avatar" [style.backgroundImage]="fotoPerfilPreview ? 'url(' + fotoPerfilPreview + ')' : null"></div>
+        <button class="avatar-edit-btn" type="button" (click)="cambiarFotoPerfil()" [disabled]="guardando" aria-label="Cambiar foto de perfil">
+          <ion-icon name="camera-outline"></ion-icon>
+        </button>
+        <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden (change)="onSeleccionarFotoPerfil($event)" />
+      </div>
+    </section>
+
+    @if (fotoPerfilPreview) {
+      <section class="metadata-card">
+        <button
+          class="metadata-toggle"
+          type="button"
+          (click)="toggleMetadataPerfil()"
+          [attr.aria-expanded]="metadataExpandida"
+          aria-controls="profile-exif-metadata"
+          [disabled]="leyendoMetadata"
+        >
+          <span>
+            <ion-icon name="information-circle-outline"></ion-icon>
+            Metadata EXIF
+          </span>
+          <ion-icon [name]="metadataExpandida ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+        </button>
+
+        @if (metadataExpandida) {
+          <div class="metadata-panel" id="profile-exif-metadata" aria-live="polite">
+            @if (leyendoMetadata) {
+              <p class="metadata-message">Leyendo metadata de la imagen...</p>
+            } @else if (errorMetadata) {
+              <p class="metadata-message metadata-message--error">{{ errorMetadata }}</p>
+            } @else if (metadataPerfil.length) {
+              <dl class="metadata-list">
+                @for (item of metadataPerfil; track item.label) {
+                  <div class="metadata-item">
+                    <dt>{{ item.label }}</dt>
+                    <dd>{{ item.value }}</dd>
+                  </div>
+                }
+              </dl>
+            } @else {
+              <p class="metadata-message">Esta imagen no contiene metadata EXIF disponible.</p>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ===== Datos básicos ===== -->
+    <section class="form-card">
+      <h2 class="section-title">Información básica</h2>
+
+      <label class="field-label">Nombre</label>
+      <input class="dark-input" type="text" placeholder="Tu nombre completo" [(ngModel)]="usuario.nombre" [disabled]="guardando" />
+
+      <label class="field-label">Usuario</label>
+      <input class="dark-input" type="text" placeholder="Nombre de usuario" [(ngModel)]="usuario.username" [disabled]="guardando" />
+
+      <label class="field-label">Correo</label>
+      <input class="dark-input" type="email" placeholder="correo@ejemplo.com" [(ngModel)]="usuario.email" [disabled]="guardando" />
+
+      <label class="field-label">Bio</label>
+      <textarea class="dark-input dark-textarea" rows="3" placeholder="Cuéntanos algo sobre ti"
+                [(ngModel)]="usuario.bio" [disabled]="guardando"></textarea>
+    </section>
+
+    <!-- ===== Intereses ===== -->
+    <section class="form-card">
+      <h2 class="section-title">Intereses</h2>
+
+      <div class="chips-wrap">
+        @for (interes of usuario.intereses; track interes; let i = $index) {
+          <span class="chip">
+            {{ interes }}
+            <button class="chip-remove" type="button" (click)="eliminarInteres(i)" [disabled]="guardando" [attr.aria-label]="'Eliminar ' + interes">
+              <ion-icon name="close-outline"></ion-icon>
+            </button>
+          </span>
+        }
+      </div>
+
+      <div class="add-interest-row">
+        <input class="dark-input" type="text" placeholder="Agregar interés"
+               [(ngModel)]="nuevoInteres" (keyup.enter)="agregarInteres()" [disabled]="guardando" />
+        <button class="add-btn" type="button" (click)="agregarInteres()" [disabled]="guardando" aria-label="Agregar interés">
+          <ion-icon name="add-outline"></ion-icon>
+        </button>
+      </div>
+    </section>
+
+    <button class="save-btn" type="button" (click)="guardarCambios()" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+    </button>
+
+  </main>
+</ion-content>

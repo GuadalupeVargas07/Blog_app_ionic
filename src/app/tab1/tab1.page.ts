@@ -20,7 +20,8 @@ import {
   menuOutline,
   personCircleOutline,
   sparklesOutline,
-  planetOutline
+  planetOutline,
+  statsChartOutline
 } from 'ionicons/icons';
 import { PhotoService } from '../services/photo.service';
 import { StorageService } from '../services/storage.service';
@@ -120,6 +121,7 @@ export class Tab1Page implements OnInit {
       'log-out-outline': logOutOutline,
       'sparkles-outline': sparklesOutline,
       'planet-outline': planetOutline,
+      'stats-chart-outline': statsChartOutline,
     });
   }
 
@@ -555,6 +557,13 @@ private async guardarPerfilEnApi(payload: Record<string, any>): Promise<void> {
       ],
       buttons: [
         {
+          text: 'Perfil completo',
+          cssClass: 'perfil-modal__button perfil-modal__button--complete',
+          handler: () => {
+            void this.router.navigate(['/datosperfil']);
+          },
+        },
+        {
           text: 'Cancelar',
           role: 'cancel',
           cssClass: 'perfil-modal__button perfil-modal__button--cancel',
@@ -686,6 +695,11 @@ private async guardarPerfilEnApi(payload: Record<string, any>): Promise<void> {
   goToHome(): void {
     this.closeMenu();
     this.router.navigate(['/hm']);
+  }
+
+  goToEstadisticas(): void {
+    this.closeMenu();
+    this.router.navigate(['/graficas']);
   }
 
   setActiveTab(tab: 'diario' | 'fotos' | 'animos'): void {

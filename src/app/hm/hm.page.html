@@ -169,7 +169,12 @@
     <div class="entry-card__footer">
       <span class="entry-card__note"><em>*</em> Obligatorio</span>
       <button class="btn-primary" (click)="publish()" [disabled]="!canPublish() || publishing()">
-        {{ publishing() ? 'Guardando...' : publishLabel() }} <ion-icon name="arrow-forward-outline"></ion-icon>
+        @if (publishing()) {
+          <ion-spinner name="crescent" aria-label="Guardando"></ion-spinner>
+          <span role="status" aria-live="polite">Guardando...</span>
+        } @else {
+          {{ publishLabel() }} <ion-icon name="arrow-forward-outline"></ion-icon>
+        }
       </button>
     </div>
   </div>

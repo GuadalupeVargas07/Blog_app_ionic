@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, inject, signal, computed } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonIcon, ToastController } from '@ionic/angular';
+import { IonContent, IonIcon, IonSpinner, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   menuOutline,
@@ -50,7 +50,7 @@ export type ComposerMode = 'diario' | 'foto' | 'animo';
   templateUrl: './hm.page.html',
   styleUrls: ['./hm.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonContent, IonIcon],
+  imports: [CommonModule, FormsModule, IonContent, IonIcon, IonSpinner],
 })
 export class HmPage implements OnInit {
   private readonly api = inject(HmApiService);
@@ -358,7 +358,7 @@ export class HmPage implements OnInit {
       const ext = photo.format || 'jpeg';
       this.setPendingPhoto(new File([blob], `foto.${ext}`, { type: blob.type || `image/${ext}` }));
     } catch {
-      // El usuario canceló la cámara: no hacemos nada
+      
     }
   }
 
@@ -366,7 +366,7 @@ export class HmPage implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) this.setPendingPhoto(file);
-    input.value = ''; // permite volver a elegir la misma imagen
+    input.value = ''; 
   }
 
   private setPendingPhoto(file: File): void {
@@ -455,6 +455,7 @@ export class HmPage implements OnInit {
     if (this.publishing()) return;
 
     const editing = this.editingItem();
+    const publishingStartedAt = Date.now();
     this.publishing.set(true);
     try {
       switch (this.mode()) {
@@ -541,6 +542,10 @@ export class HmPage implements OnInit {
       console.error('Error al publicar', error);
       await this.toast(error?.response?.data?.message || 'No se pudo guardar. Intenta de nuevo.', 'danger');
     } finally {
+      const elapsed = Date.now() - publishingStartedAt;
+      if (elapsed < 3000) {
+        await new Promise((resolve) => setTimeout(resolve, 3000 - elapsed));
+      }
       this.publishing.set(false);
     }
   }

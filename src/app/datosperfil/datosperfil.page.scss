@@ -1,0 +1,327 @@
+:host {
+  display: block;
+  --profile-bg: #0a0a0b;
+  --profile-card: #17171a;
+  --profile-accent: #e63354;
+}
+
+.dark-bg {
+  --background: var(--profile-bg);
+  --color: #fff;
+}
+
+.dark-toolbar {
+  --background: var(--profile-bg);
+  --color: #fff;
+}
+
+.editor {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+/* ===== Portada + avatar ===== */
+.cover {
+  position: relative;
+  height: 180px;
+  background-color: #1c1c22;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 38px;
+}
+
+.cover-edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.avatar-wrap {
+  position: absolute;
+  bottom: -40px;
+  left: 20px;
+}
+
+.avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 4px solid var(--profile-bg);
+  background-color: #2a2a32;
+  background-size: cover;
+  background-position: center;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #0a0a0f;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff3d7f, #c2185b);
+  color: #fff;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+.metadata-card {
+  margin: 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--profile-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.metadata-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 650;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  ion-icon {
+    color: #e98da1;
+    font-size: 18px;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+  }
+}
+
+.metadata-panel {
+  padding-top: 12px;
+}
+
+.metadata-message {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.metadata-message--error {
+  color: #ff9eae;
+}
+
+.metadata-list {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.metadata-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.78rem;
+
+  dt {
+    color: #999;
+  }
+
+  dd {
+    margin: 0;
+    color: #fff;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ===== Tarjetas de formulario ===== */
+.form-card {
+  margin: 16px;
+  padding: 18px 16px;
+  border-radius: 20px;
+  background: var(--profile-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 14px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+
+  ion-icon {
+    font-size: 18px;
+    color: #999;
+  }
+}
+
+.field-label {
+  display: block;
+  margin: 12px 0 6px;
+  color: #999;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.dark-input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #202124;
+  color: #fff;
+  font-size: 0.88rem;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #666;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--profile-accent);
+    box-shadow: 0 0 0 2px rgba(230, 51, 84, 0.18);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
+.dark-textarea {
+  resize: none;
+}
+
+/* ===== Chips de intereses ===== */
+.chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #222228;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #ddd;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+
+}
+
+.chip-remove {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #999;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+.add-interest-row {
+  display: flex;
+  gap: 8px;
+
+  .dark-input {
+    flex: 1;
+  }
+}
+
+.add-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff3d7f, #c2185b);
+  color: #fff;
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+/* ===== Guardar perfil ===== */
+.save-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 8px 16px 0;
+  padding: 14px;
+  border: none;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #e63354, #7a1330);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(230, 51, 84, 0.28);
+}
+
+.cover-edit-btn:disabled,
+.avatar-edit-btn:disabled,
+.add-btn:disabled,
+.chip-remove:disabled,
+.save-btn:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 380px) {
+  .form-card {
+    margin-right: 12px;
+    margin-left: 12px;
+  }
+
+  .save-btn {
+    width: calc(100% - 24px);
+    margin-right: 12px;
+    margin-left: 12px;
+  }
+}

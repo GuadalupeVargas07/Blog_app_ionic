@@ -32,7 +32,7 @@ export class ApiDiagnosticsService {
   private requestSequence = 0;
   private activeRequestId = 0;
 
-  constructor(apiConfig: ApiConfigService) {
+  constructor(private readonly apiConfig: ApiConfigService) {
     try {
       const baseUrl = apiConfig.getApiBaseUrl();
       const host = new URL(baseUrl).host;
@@ -124,6 +124,67 @@ export class ApiDiagnosticsService {
     );
   }
 
+  async testConnection(): Promise<void> {
+    let url: string;
+    try {
+      url = `${this.apiConfig.getApiBaseUrl()}/login.php`;
+    } catch (error) {
+      this.reportApplicationError(error instanceof Error ? error.message : 'Configura el servidor de la API.');
+      return;
+    }
+
+    const host = this.getHost(url);
+    this.diagnostic.set({
+      status: 'connecting',
+      method: 'POST',
+      url,
+      host,
+      payload: '{"purpose":"connection-check"}',
+      message: `Probando API y base de datos en ${host}...`,
+      httpStatus: null,
+      updatedAt: new Date().toISOString(),
+    });
+
+    try {
+      const body = new URLSearchParams({
+        email: `connection-check-${Date.now()}-${Math.random().toString(36).slice(2)}@invalid.invalid`,
+        password: `connection-check-${Math.random().toString(36).slice(2)}`,
+      });
+      const response = await axios.post(url, body, {
+        timeout: 8000,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        validateStatus: () => true,
+      });
+      const databaseAnswered = response.status === 401 || response.status === 404;
+      this.diagnostic.update((current) => ({
+        ...current,
+        status: response.status >= 500 ? 'error' : 'connected',
+        httpStatus: response.status,
+        message: databaseAnswered
+          ? `La API respondió y pudo consultar MySQL. La prueba no crea ni modifica cuentas. HTTP ${response.status}.`
+          : response.status >= 500
+            ? `La API respondió HTTP ${response.status}, pero PHP no pudo completar la consulta. Revisa MySQL y la configuración de la base de datos.`
+            : `La laptop respondió HTTP ${response.status}. Verifica la respuesta de login; MySQL se consulta desde PHP, no desde el celular.`,
+        updatedAt: new Date().toISOString(),
+      }));
+    } catch (error: unknown) {
+      const axiosError = axios.isAxiosError(error) ? error : null;
+      const reason = axiosError?.code === 'ECONNABORTED' || axiosError?.code === 'ETIMEDOUT'
+        ? 'Axios agotó el tiempo de espera al conectar.'
+        : axiosError?.response
+          ? `La API respondió con error HTTP ${axiosError.response.status}.`
+          : 'Axios no recibió respuesta del servidor.';
+      this.diagnostic.update((current) => ({
+        ...current,
+        status: 'error',
+        httpStatus: axiosError?.response?.status ?? null,
+        message: `${reason} Si no hay código HTTP, revisa que ambos equipos estén en la misma Wi-Fi, el acceso del firewall al puerto HTTP y los encabezados CORS de Apache/PHP.`,
+        updatedAt: new Date().toISOString(),
+      }));
+      this.modalOpen.set(true);
+    }
+  }
+
   reportApplicationError(message: string): void {
     this.diagnostic.update((current) => ({
       ...current,
@@ -184,7 +245,11 @@ export class ApiDiagnosticsService {
       try {
         payload = JSON.parse(data);
       } catch {
-        payload = data;
+        if (data.includes('=')) {
+          payload = Object.fromEntries(new URLSearchParams(data));
+        } else {
+          payload = data;
+        }
       }
     }
 

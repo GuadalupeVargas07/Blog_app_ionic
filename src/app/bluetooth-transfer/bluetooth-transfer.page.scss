@@ -1,0 +1,58 @@
+:host {
+  display: block;
+}
+
+.transfer-card {
+  margin: 0 auto 18px;
+  max-width: 680px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 16px;
+  background: var(--ion-card-background, #fff);
+}
+
+.section-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+
+  ion-icon {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    font-size: 24px;
+    color: var(--ion-color-primary);
+  }
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 1.08rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    line-height: 1.45;
+  }
+}
+
+.selected-file,
+.empty-message,
+.progress-message {
+  margin: 12px 0;
+  color: var(--ion-color-medium);
+}
+
+.progress-message {
+  font-weight: 600;
+}
+
+ion-list {
+  padding: 0;
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+}

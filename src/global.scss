@@ -111,6 +111,12 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.perfil-modal__button--complete {
+  --background: rgba(230, 51, 84, 0.14);
+  --color: #ff7188;
+  border: 1px solid rgba(230, 51, 84, 0.35);
+}
+
 .perfil-modal--simple .alert-head,
 .perfil-modal--simple .alert-message,
 .perfil-modal--simple .alert-button-group {

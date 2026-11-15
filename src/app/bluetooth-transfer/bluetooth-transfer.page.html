@@ -1,0 +1,84 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Transferencia Bluetooth</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <section class="transfer-card">
+    <div class="section-heading">
+      <ion-icon name="bluetooth-outline" aria-hidden="true"></ion-icon>
+      <div>
+        <h2>Recibir archivos</h2>
+        <p>Activa la recepción y mantén esta pantalla abierta. Podrás aceptar o rechazar cada envío.</p>
+      </div>
+    </div>
+    <ion-button expand="block" color="primary" (click)="startReceiving()" [disabled]="busy() || transfer.receiving()">
+      <ion-spinner *ngIf="busy() && !transfer.receiving()" name="crescent"></ion-spinner>
+      <span *ngIf="!busy() || transfer.receiving()">
+        {{ transfer.receiving() ? 'Recepción activa' : 'Activar recepción' }}
+      </span>
+    </ion-button>
+    <ion-button
+      *ngIf="transfer.receiving()"
+      expand="block"
+      fill="outline"
+      color="medium"
+      (click)="stopReceiving()"
+      [disabled]="busy()"
+    >
+      Detener recepción
+    </ion-button>
+    <div *ngIf="transfer.progress() !== null" class="progress-message">
+      Recibiendo archivo: {{ transfer.progress() }}%
+    </div>
+  </section>
+
+  <section class="transfer-card">
+    <div class="section-heading">
+      <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
+      <div>
+        <h2>Enviar archivo</h2>
+        <p>Selecciona el receptor BLE y el archivo. El límite de transferencia es 20 MB.</p>
+      </div>
+    </div>
+    <input #filePicker type="file" hidden (change)="onFileSelected($event)" />
+    <ion-button expand="block" fill="outline" (click)="filePicker.click()" [disabled]="busy()">
+      Seleccionar archivo
+    </ion-button>
+    <p *ngIf="selectedFile" class="selected-file">
+      {{ selectedFile.name }} · {{ formatSize(selectedFile.size) }}
+    </p>
+    <ion-button expand="block" (click)="sendFile()" [disabled]="busy() || !selectedFile">
+      <ion-spinner *ngIf="busy()" name="crescent"></ion-spinner>
+      <span *ngIf="!busy()">Buscar receptor y enviar</span>
+    </ion-button>
+    <div *ngIf="transfer.progress() !== null && busy()" class="progress-message">
+      Enviando archivo: {{ transfer.progress() }}%
+    </div>
+  </section>
+
+  <section class="transfer-card">
+    <div class="section-heading">
+      <ion-icon name="bluetooth-outline" aria-hidden="true"></ion-icon>
+      <div>
+        <h2>Buffer local</h2>
+        <p>Los archivos recibidos permanecen en el almacenamiento privado de este teléfono; no se suben a la API.</p>
+      </div>
+    </div>
+    <ion-list *ngIf="transfer.files().length; else emptyBuffer">
+      <ion-item *ngFor="let file of transfer.files()">
+        <ion-label>
+          <h3>{{ file.name }}</h3>
+          <p>{{ formatSize(file.size) }} · {{ file.receivedAt | date:'short' }}</p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" color="danger" (click)="deleteFile(file)" aria-label="Eliminar archivo">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+    <ng-template #emptyBuffer>
+      <p class="empty-message">Todavía no hay archivos recibidos.</p>
+    </ng-template>
+  </section>
+</ion-content>

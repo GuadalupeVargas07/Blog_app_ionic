@@ -12,11 +12,10 @@ export interface ApiServerConfig {
 export class ApiConfigService {
   private readonly storageKey = 'api_server_config';
   private readonly legacyStorageKey = 'api_base_url';
-
   getApiBaseUrl(): string {
     const config = this.getServerConfig();
     if (!config) {
-      throw new Error('Configura la IP y el puerto del servidor desde Origen de datos.');
+      throw new Error('Configura la IP y el puerto HTTP del servidor antes de usar la API.');
     }
 
     const url = new URL(`${config.protocol}://${config.host}`);
@@ -101,10 +100,11 @@ export class ApiConfigService {
   setServerOrigin(rawValue: string): string {
     const value = rawValue.trim();
     const candidate = /^https?:\/\//i.test(value) ? value : `http://${value}`;
+    const cleanCandidate = candidate.replace(/\/API_aplicacion1\/?$/i, '').replace(/\/+$/, '');
 
     let url: URL;
     try {
-      url = new URL(candidate);
+      url = new URL(cleanCandidate);
     } catch {
       throw new Error('Ingresa una IP o nombre de equipo válido, con puerto HTTP opcional.');
     }

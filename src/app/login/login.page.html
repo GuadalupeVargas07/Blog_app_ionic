@@ -5,6 +5,100 @@
   <div class="stars3"></div>
 
   <div id="msform">
+    <!-- Configuración del Origen de Datos (IP / Puerto) -->
+    <section class="server-config-card">
+      <div class="server-header">
+        <ion-icon name="server-outline" class="server-icon"></ion-icon>
+        <div>
+          <h2>Origen de datos (Laptop / BD)</h2>
+          <span class="server-sub">Conexión sobre la misma red Wi-Fi</span>
+        </div>
+      </div>
+
+      <label class="server-label" for="server-origin">IP y puerto del servidor de datos</label>
+      <ion-input
+        id="server-origin"
+        class="dark-input server-input-field"
+        type="text"
+        inputmode="url"
+        placeholder="192.168.1.66:80"
+        autocomplete="off"
+        [(ngModel)]="serverOrigin">
+      </ion-input>
+
+      <p class="server-help">
+        Ingresa la IP de tu laptop (ej. <code>192.168.1.66</code> o <code>192.168.1.66:80</code>).
+        <br>
+        <span class="db-badge">MySQL en puerto 3306</span> Las APIs en tu laptop consultan MySQL internamente y responden por el puerto web de Apache (80).
+      </p>
+
+      <div class="server-actions">
+        <ion-button expand="block" fill="outline" class="server-btn btn-save" (click)="guardarServidor()">
+          Guardar IP
+        </ion-button>
+        <ion-button expand="block" fill="outline" class="server-btn btn-test" (click)="probarConexion()" [disabled]="probandoConexion">
+          {{ probandoConexion ? 'Probando...' : 'Probar conexión' }}
+        </ion-button>
+      </div>
+
+      <ion-button expand="block" fill="clear" size="small" class="server-advanced-btn" (click)="abrirOrigenDatos()">
+        Configuración avanzada
+      </ion-button>
+
+      @if (apiDiagnostics.diagnostic().url) {
+        <section
+          class="connection-status"
+          [class.connection-error]="apiDiagnostics.diagnostic().status === 'error'"
+          [class.connection-success]="apiDiagnostics.diagnostic().status === 'connected'"
+          aria-live="polite">
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            <strong>Estado: {{ apiDiagnostics.statusLabel() }}</strong>
+          </div>
+          <span class="status-host">{{ apiDiagnostics.diagnostic().host || serverOrigin || 'IP no configurada' }}</span>
+          <p class="status-msg">{{ apiDiagnostics.diagnostic().message }}</p>
+          <button type="button" class="diagnostic-link" (click)="apiDiagnostics.openModal()">
+            Ver detalles del diagnóstico
+          </button>
+        </section>
+      }
+    </section>
+
+    <!-- Modal de Diagnóstico de Red -->
+    <ion-modal [isOpen]="apiDiagnostics.modalOpen()" (didDismiss)="apiDiagnostics.dismissModal()">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar color="dark">
+            <ion-title>Diagnóstico de Conexión</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="apiDiagnostics.dismissModal()">Cerrar</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding diagnostic-modal-content">
+          <div class="diagnostic-modal-card">
+            <h3>Información de la Solicitud</h3>
+            <p><strong>Estado:</strong> {{ apiDiagnostics.statusLabel() }}</p>
+            <p><strong>URL evaluada:</strong> <code>{{ apiDiagnostics.diagnostic().url || 'Sin URL' }}</code></p>
+            <p><strong>Host / IP:</strong> {{ apiDiagnostics.diagnostic().host || 'No detectado' }}</p>
+            <p><strong>Código HTTP:</strong> {{ apiDiagnostics.diagnostic().httpStatus ?? 'Sin respuesta de red' }}</p>
+            <p><strong>Mensaje:</strong> {{ apiDiagnostics.diagnostic().message }}</p>
+
+            <div class="diagnostic-tip-box">
+              <h4>Verificación de conexión móvil:</h4>
+              <ul>
+                <li>Tu laptop y tu celular deben estar conectados a la <strong>misma red Wi-Fi</strong>.</li>
+                <li>La IP de tu laptop actualmente es <code>192.168.1.66</code>.</li>
+                <li>Apache atiende solicitudes web en el puerto <code>80</code>.</li>
+                <li>MySQL atiende en el puerto <code>3306</code> (consultado internamente por PHP).</li>
+                <li>Si desde el celular no conecta, permite el puerto 80 en el Firewall de Windows para Apache.</li>
+              </ul>
+            </div>
+            <ion-button expand="block" (click)="apiDiagnostics.dismissModal()">Entendido</ion-button>
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
 
     <!-- Toggle Login / Registro -->
     <ion-segment [(ngModel)]="mode" class="mode-toggle" mode="ios">
@@ -24,43 +118,8 @@
       <h2 class="fs-title">Bienvenido de nuevo</h2>
       <h3 class="fs-subtitle">Accede a tu cuenta</h3>
 
-      <label class="server-label" for="server-origin">Servidor API (URL o IP:puerto)</label>
-      <ion-input
-        id="server-origin"
-        class="dark-input"
-        type="text"
-        inputmode="url"
-        placeholder="http://192.168.1.20:80"
-        autocomplete="off"
-        [(ngModel)]="serverOrigin">
-      </ion-input>
-      <p class="server-help">Usa la IP de tu laptop y el puerto de Apache/PHP. MySQL usa 3306 internamente.</p>
-      <ion-button expand="block" fill="outline" class="server-save" (click)="guardarServidor()">
-        Guardar servidor
-      </ion-button>
-      <ion-button expand="block" fill="clear" class="server-save" (click)="abrirOrigenDatos()">
-        Configuración avanzada
-      </ion-button>
-
       <ion-input class="dark-input" type="email" placeholder="Email" [(ngModel)]="loginData.email"></ion-input>
       <ion-input class="dark-input" type="password" placeholder="Contraseña" [(ngModel)]="loginData.password"></ion-input>
-
-      <section
-        class="connection-status"
-        [class.connection-error]="apiDiagnostics.diagnostic().status === 'error'"
-        [class.connection-success]="apiDiagnostics.diagnostic().status === 'connected'"
-        aria-live="polite">
-        <strong>Conexión API: {{ apiDiagnostics.statusLabel() }}</strong>
-        <span>{{ apiDiagnostics.diagnostic().host || serverOrigin || 'IP no configurada' }}</span>
-        <p>{{ apiDiagnostics.diagnostic().message }}</p>
-        <button
-          *ngIf="apiDiagnostics.diagnostic().url"
-          type="button"
-          class="diagnostic-link"
-          (click)="apiDiagnostics.openModal()">
-          Ver payload y destino
-        </button>
-      </section>
 
       <a class="forgot-link">¿Olvidaste tu contraseña?</a>
 

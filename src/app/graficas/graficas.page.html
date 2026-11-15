@@ -1,0 +1,223 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Estadísticas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="dark-bg">
+
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Estadísticas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <main class="dashboard">
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Tu espacio personal</p>
+        <h1>Actividad y bienestar</h1>
+        <p class="subtitle">Un resumen de tus diarios, estados de ánimo y capturas de los últimos 30 días.</p>
+      </div>
+      <button class="refresh-button" type="button" [disabled]="loading()" (click)="loadData()">
+        {{ loading() ? 'Actualizando…' : 'Actualizar datos' }}
+      </button>
+    </section>
+
+    <div class="scope-note">
+      Las gráficas muestran únicamente los datos de tu cuenta. Los registros de nuevos usuarios y la retención global
+      requieren estadísticas del servidor que no están disponibles en esta aplicación.
+    </div>
+
+    @if (usingCachedData(); as cachedMessage) {
+      <div class="status-message">{{ cachedMessage }}</div>
+    }
+    @if (error(); as errorMessage) {
+      <div class="status-message error-message">
+        <span>{{ errorMessage }}</span>
+        @if (!loading()) {
+          <button type="button" (click)="loadData()">Reintentar</button>
+        }
+      </div>
+    }
+    @if (loading()) {
+      <div class="loading-message">Cargando tus datos…</div>
+    }
+
+    @if (!loading() && !error()) {
+      <section class="summary-grid" aria-label="Resumen de actividad">
+        <article class="summary-card">
+          <span class="summary-label">Registros analizados</span>
+          <strong>{{ totalRecords() }}</strong>
+          <span class="summary-detail">diario, ánimo y capturas</span>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Días con actividad</span>
+          <strong>{{ activeDays() }} <small>/ 30</small></strong>
+          <span class="summary-detail">en los últimos 30 días</span>
+        </article>
+        <article class="summary-card unavailable-card">
+          <span class="summary-label">Nuevos usuarios</span>
+          <strong>—</strong>
+          <span class="summary-detail">métrica global no disponible</span>
+        </article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="chart-card chart-card-wide">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Crecimiento personal</p>
+              <h2>Actividad acumulada por día</h2>
+              <p class="card-description">Nuevos registros diarios, apilados por tipo durante los últimos 30 días.</p>
+            </div>
+            <span class="chart-badge">Área apilada</span>
+          </div>
+          <div class="chart-legend" aria-label="Series de actividad">
+            <span><i class="legend-dot diary-dot"></i>Diario</span>
+            <span><i class="legend-dot mood-dot"></i>Ánimos</span>
+            <span><i class="legend-dot capture-dot"></i>Capturas</span>
+            <span class="unavailable-legend">Usuarios: no disponible</span>
+          </div>
+          <div class="chart-scroll">
+            <svg class="trend-chart" viewBox="0 0 720 250" role="img" aria-label="Gráfica de área apilada con registros diarios">
+              <g class="grid-lines">
+                @for (tick of yTicks(); track tick) {
+                  <line x1="48" x2="704" [attr.y1]="yPosition(tick)" [attr.y2]="yPosition(tick)"></line>
+                }
+              </g>
+              <g class="axis-labels">
+                @for (tick of yTicks(); track tick) {
+                  <text x="40" [attr.y]="yPosition(tick) + 4" text-anchor="end">{{ tick }}</text>
+                }
+              </g>
+              <g>
+                @for (series of areaPaths(); track series.name) {
+                  <path [attr.d]="series.path" [attr.fill]="series.color" fill-opacity="0.72">
+                    <title>{{ series.name }}</title>
+                  </path>
+                }
+              </g>
+              <line class="axis-line" x1="48" x2="704" y1="214" y2="214"></line>
+              <g class="axis-labels">
+                @for (tick of chartTicks(); track tick.label) {
+                  <text [attr.x]="tick.x" y="236" text-anchor="middle">{{ tick.label }}</text>
+                }
+              </g>
+            </svg>
+          </div>
+          <p class="chart-footnote">El alta de usuarios y las cuentas de otras personas no se consultan desde esta pantalla.</p>
+        </article>
+
+        <article class="chart-card chart-card-wide">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Constancia</p>
+              <h2>Actividad diaria</h2>
+              <p class="card-description">Cantidad de registros que agregaste cada día.</p>
+            </div>
+            <span class="chart-badge">Barras · 30 días</span>
+          </div>
+          <div class="chart-scroll">
+            <svg class="trend-chart" viewBox="0 0 720 250" role="img" aria-label="Barras de actividad diaria de los últimos 30 días">
+              <g class="grid-lines">
+                @for (tick of yTicks(); track tick) {
+                  <line x1="48" x2="704" [attr.y1]="yPosition(tick)" [attr.y2]="yPosition(tick)"></line>
+                }
+              </g>
+              <g class="axis-labels">
+                @for (tick of yTicks(); track tick) {
+                  <text x="40" [attr.y]="yPosition(tick) + 4" text-anchor="end">{{ tick }}</text>
+                }
+              </g>
+              <g class="activity-bars">
+                @for (bar of activityBars(); track bar.x) {
+                  <rect [attr.x]="bar.x" [attr.y]="bar.y" width="13" [attr.height]="bar.height" rx="3">
+                    <title>{{ bar.total }} registros</title>
+                  </rect>
+                }
+              </g>
+              <line class="axis-line" x1="48" x2="704" y1="214" y2="214"></line>
+              <g class="axis-labels">
+                @for (tick of chartTicks(); track tick.label) {
+                  <text [attr.x]="tick.x" y="236" text-anchor="middle">{{ tick.label }}</text>
+                }
+              </g>
+            </svg>
+          </div>
+          <p class="chart-footnote">Los días activos describen tu cuenta; la retención por cohortes necesita datos globales de usuarios.</p>
+        </article>
+
+        <article class="chart-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Bienestar</p>
+              <h2>Estados de ánimo</h2>
+              <p class="card-description">Proporción de tus estados de ánimo registrados.</p>
+            </div>
+            <span class="chart-badge">Dona</span>
+          </div>
+          @if (moodSlices().length) {
+            <div class="mood-chart">
+              <svg class="mood-donut" viewBox="0 0 120 120" role="img" aria-label="Distribución de estados de ánimo">
+              <circle class="donut-track" cx="60" cy="60" r="42"></circle>
+              @for (slice of moodSlices(); track slice.name) {
+                <circle
+                  class="donut-slice"
+                  cx="60"
+                  cy="60"
+                  r="42"
+                  [attr.stroke]="slice.color"
+                  [attr.stroke-dasharray]="slice.dashArray"
+                  [attr.stroke-dashoffset]="slice.dashOffset">
+                  <title>{{ slice.name }}: {{ slice.count }} ({{ slice.percent | number:'1.0-1' }}%)</title>
+                </circle>
+              }
+              <text class="donut-total" x="60" y="57" text-anchor="middle">{{ moodEntries().length }}</text>
+              <text class="donut-caption" x="60" y="72" text-anchor="middle">registros</text>
+              </svg>
+              <ul class="legend-list">
+                @for (slice of moodSlices(); track slice.name) {
+                  <li>
+                    <i class="legend-dot" [style.backgroundColor]="slice.color"></i>
+                    <span class="legend-name">{{ slice.name }}</span>
+                    <strong>{{ slice.percent | number:'1.0-0' }}%</strong>
+                  </li>
+                }
+              </ul>
+            </div>
+          } @else {
+            <p class="empty-state">Aún no hay estados de ánimo para mostrar.</p>
+          }
+        </article>
+
+        <article class="chart-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Preferencias</p>
+              <h2>Música más frecuente</h2>
+              <p class="card-description">Música asociada a tus registros de ánimo.</p>
+            </div>
+            <span class="chart-badge">Top 5</span>
+          </div>
+          @if (musicItems().length) {
+            <ol class="music-list">
+              @for (song of musicItems(); track song.name; let index = $index) {
+                <li>
+                  <div class="music-label">
+                    <span class="music-rank">{{ index + 1 }}</span>
+                    <span class="music-name" [title]="song.name">{{ song.name }}</span>
+                    <strong>{{ song.count }}</strong>
+                  </div>
+                  <div class="music-track"><span [style.width.%]="song.percent"></span></div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="empty-state">Agrega música a tus registros de ánimo para ver tus preferencias.</p>
+          }
+        </article>
+      </section>
+    }
+  </main>
+</ion-content>
